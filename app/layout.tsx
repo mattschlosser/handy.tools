@@ -17,7 +17,7 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "Tiny Vid",
-  description: "A simple, no bullshit video converter",
+  description: "A simple, no bullshit video compressor",
 };
 
 export default function RootLayout({
