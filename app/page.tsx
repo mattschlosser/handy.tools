@@ -88,7 +88,7 @@ export default function Dashboard() {
   const [imageUploading, setImageUploading] = useState(false);
   const debounceQualityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [cOptions, setCOptions] = useState<CompressionOptions>({
-    quality: 50,
+    quality: 70,
     preset: "faster",
     fps: 30,
   });
