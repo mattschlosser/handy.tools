@@ -89,7 +89,7 @@ export default function Dashboard() {
   const debounceQualityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [cOptions, setCOptions] = useState<CompressionOptions>({
     quality: 70,
-    preset: "faster",
+    preset: "superfast",
     fps: 30,
   });
 
@@ -337,7 +337,7 @@ export default function Dashboard() {
                   </Select>
                 </div>
                 <p className="text-sm text-gray-500">
-                  A slower preset will provide better compression, but will take
+                  Compression speed. A slower preset will provide slightly better compression, but will take
                   longer to process.
                 </p>
               </div>
