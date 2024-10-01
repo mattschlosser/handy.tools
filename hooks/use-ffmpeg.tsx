@@ -159,7 +159,7 @@ export const useFfmpeg = () => {
     }
 
     if (!state.isLoaded && !state.isLoading) {
-      void load();
+      void load(''); // use local ffmpeg
     }
   
   }, [load, state.isLoaded, state.isLoading, ffmpegServiceRef]);

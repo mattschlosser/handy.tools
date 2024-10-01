@@ -198,7 +198,7 @@ export default function Dashboard() {
         handleProcessThumbnail(files[0], options, setThumbnail);
       }, 300);
     }
-  }
+  };
 
   const handleQualityChange = (value: number) => {
     const newOptions = {
@@ -230,15 +230,16 @@ export default function Dashboard() {
     debouncedHandleProcessThumbnail(newOptions);
   };
 
-  const handleFpsChange = (value: number) => {
-    const newOptions = {
-      ...cOptions,
-      fps: value,
-    };
+  const handleFpsChange = (value: number | string) => {
+    if (typeof value === "number") {
+      const newOptions = {
+        ...cOptions,
+        fps: value,
+      };
 
-    setCOptions(newOptions);
-    debouncedHandleProcessThumbnail(newOptions);
-  }
+      setCOptions(newOptions);
+    }
+  };
 
   const isDisabled = !isFfmpegLoaded || isTranscoding;
 
@@ -247,7 +248,7 @@ export default function Dashboard() {
       <div className="grid md:grid-cols-3 gap-4 w-full mx-auto">
         <div className="flex flex-col gap-2 md:col-span-2 border p-2 rounded">
           <div className="relative flex items-center justify-center aspect-square">
-            {(files.length === 0 && !isFfmpegLoading) && (
+            {files.length === 0 && !isFfmpegLoading && (
               <Dropzone
                 containerClassName="w-full h-full"
                 dropZoneClassName="w-full h-full"
@@ -361,12 +362,11 @@ export default function Dashboard() {
                 <Label htmlFor="fps">FPS</Label>
                 <Input
                   disabled={isDisabled}
-                  onChange={(e) => handleFpsChange(parseInt(e.target.value) || 1)}
+                  onChange={(e) => handleFpsChange(parseInt(e.target.value))}
                   value={cOptions.fps}
                   type="number"
                   id="fps"
                   max={120}
-                  min={1}
                 />
                 <p className="text-sm text-gray-500">
                   Frames per second. Lower FPS will result in smaller file size
@@ -397,7 +397,10 @@ export default function Dashboard() {
                 )}
               </div> */}
 
-              <Button onClick={handleTranscode} disabled={isDisabled || files.length === 0}>
+              <Button
+                onClick={handleTranscode}
+                disabled={isDisabled || files.length === 0}
+              >
                 {isTranscoding && (
                   <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                 )}
