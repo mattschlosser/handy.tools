@@ -29,9 +29,9 @@ import {
 
 type CompressionOptions = {
   quality: number;
-  width: number;
   preset: PresetOptions;
   fps: number;
+  width?: number;
 };
 
 type Thumbnail = {
@@ -88,8 +88,7 @@ export default function Dashboard() {
   const [imageUploading, setImageUploading] = useState(false);
   const debounceQualityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [cOptions, setCOptions] = useState<CompressionOptions>({
-    quality: 50,
-    width: 1000,
+    quality: 80,
     preset: "faster",
     fps: 30,
   });
@@ -120,7 +119,7 @@ export default function Dashboard() {
       crf: qualityToCrf(cOptions.quality).toString(),
       preset: cOptions.preset,
       fps: cOptions.fps,
-      ...(cOptions.width > 0 && { width: cOptions.width }),
+      ...(cOptions.width && cOptions.width > 0 && { width: cOptions.width }),
     };
 
     const result = await transcode(file, options);
@@ -163,7 +162,7 @@ export default function Dashboard() {
       crf: qualityToCrf(quality).toString(),
       preset,
       fps,
-      ...(width > 0 && { width }),
+      ...(width && width > 0 && { width }),
     };
 
     setThumbnailLoading(true);
