@@ -47,6 +47,18 @@ const Dropzone = ({
 }: DropzoneProps) => {
   const dropzone = useDropzone({
     ...props,
+    accept: {
+      "video/mp4": [".mp4"],
+      "video/mpeg": [".mpeg"],
+      "video/webm": [".webm"],
+      "video/quicktime": [".mov"],
+      "video/3gpp": [".3gp"],
+      "video/x-msvideo": [".avi"],
+      "video/x-flv": [".flv"],
+      "video/x-matroska": [".mkv"],
+      "video/ogg": [".ogg"],
+      "video/avi": [".avi"],
+    },
     onDrop(acceptedFiles, fileRejections) {
       setFilesUploaded((_filesUploaded) => [
         ..._filesUploaded,

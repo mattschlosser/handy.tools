@@ -24,7 +24,7 @@ const Preview: React.FC<PreviewProps> = React.memo((props: PreviewProps) => {
           src={thumbnail.url}
           alt="Thumbnail"
           style={{ aspectRatio: thumbnail.aspectRatio }}
-          className="object-contain rounded bg-gray-950"
+          className="object-contain rounded bg-black"
           fill
         />
       }
@@ -33,7 +33,7 @@ const Preview: React.FC<PreviewProps> = React.memo((props: PreviewProps) => {
           src={originalThumbnail.url}
           alt="Thumbnail"
           style={{ aspectRatio: originalThumbnail.aspectRatio }}
-          className="object-contain rounded bg-gray-950"
+          className="object-contain rounded bg-black"
           fill
         />
       }

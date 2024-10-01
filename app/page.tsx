@@ -193,6 +193,18 @@ export default function Dashboard() {
     };
   };
 
+  const debouncedHandleProcessThumbnail = (options: CompressionOptions) => {
+    if (files.length > 0) {
+      if (debounceQualityTimerRef.current) {
+        clearTimeout(debounceQualityTimerRef.current);
+      }
+
+      debounceQualityTimerRef.current = setTimeout(() => {
+        handleProcessThumbnail(files[0], options, setThumbnail);
+      }, 300);
+    }
+  }
+
   const handleQualityChange = (value: number) => {
     const newOptions = {
       ...cOptions,
@@ -200,16 +212,7 @@ export default function Dashboard() {
     };
 
     setCOptions(newOptions);
-
-    if (files.length > 0) {
-      if (debounceQualityTimerRef.current) {
-        clearTimeout(debounceQualityTimerRef.current);
-      }
-
-      debounceQualityTimerRef.current = setTimeout(() => {
-        handleProcessThumbnail(files[0], newOptions, setThumbnail);
-      }, 300);
-    }
+    debouncedHandleProcessThumbnail(newOptions);
   };
 
   const handleWidthChange = (value: string) => {
@@ -219,35 +222,17 @@ export default function Dashboard() {
       width: width,
     };
     setCOptions(newOptions);
-    if (files.length > 0) {
-      if (debounceQualityTimerRef.current) {
-        clearTimeout(debounceQualityTimerRef.current);
-      }
-
-      debounceQualityTimerRef.current = setTimeout(() => {
-        handleProcessThumbnail(files[0], newOptions, setThumbnail);
-      }, 300);
-    }
+    debouncedHandleProcessThumbnail(newOptions);
   };
 
   const handlePresetChange = (value: string) => {
-    console.log("🚀 ~ handlePresetChange ~ value:", value);
     const newOptions = {
       ...cOptions,
       preset: value as PresetOptions,
     };
 
     setCOptions(newOptions);
-
-    if (files.length > 0) {
-      if (debounceQualityTimerRef.current) {
-        clearTimeout(debounceQualityTimerRef.current);
-      }
-
-      debounceQualityTimerRef.current = setTimeout(() => {
-        handleProcessThumbnail(files[0], newOptions, setThumbnail);
-      }, 300);
-    }
+    debouncedHandleProcessThumbnail(newOptions);
   };
 
   const isDisabled = !isFfmpegLoaded || isTranscoding;
