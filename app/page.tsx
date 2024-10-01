@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import Dropzone from "@/components/ui/dropzone";
 import {
@@ -9,7 +10,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
-import { TranscodeOptions, useFfmpeg } from "@/hooks/use-ffmpeg";
+import { useFfmpeg } from "@/hooks/use-ffmpeg";
 import { qualityToCrf } from "@/lib/quality-to-crf";
 import { useRef, useState } from "react";
 import { downloadFile } from "@/lib/download-file";
@@ -17,6 +18,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Preview } from "@/components/core/preview";
+import { TranscodeOptions } from "./services/ffmpeg";
 
 type CompressionOptions = {
   quality: number;
@@ -31,8 +33,6 @@ type Thumbnail = {
 export default function Dashboard() {
   const [files, setFiles] = useState<File[]>([]);
   const [thumbnailLoading, setThumbnailLoading] = useState(false);
-  const [duration, setDuration] = useState<number | null>(null);
-  const [estimatedSize, setEstimatedSize] = useState<number | null>(null);
   const [thumbnail, setThumbnail] = useState<Thumbnail | null>(null);
   const [originalThumbnail, setOriginalThumbnail] = useState<Thumbnail | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
@@ -44,14 +44,12 @@ export default function Dashboard() {
 
   const {
     error,
-    isFfmpegLoading,
-    isFfmpegLoaded,
+    isLoaded: isFfmpegLoaded,
+    isLoading: isFfmpegLoading,
     extractThumbnail,
     isTranscoding,
     progress,
     transcode,
-    isEstimating,
-    estimateSize,
   } = useFfmpeg();
 
   const handleTranscode = async () => {
@@ -94,7 +92,7 @@ export default function Dashboard() {
       video.preload = "metadata";
       video.src = URL.createObjectURL(file);
       video.onloadedmetadata = () => {
-        setDuration(video.duration);
+        // setDuration(video.duration);
         URL.revokeObjectURL(video.src);
         setImageUploading(false);
       };
@@ -176,20 +174,20 @@ export default function Dashboard() {
     }
   };
 
-  const handleEstimateSize = async (file: File) => {
-    if (!file || !duration) {
-      return;
-    }
+  // const handleEstimateSize = async (file: File) => {
+  //   if (!file || !duration) {
+  //     return;
+  //   }
 
-    const options = {
-      crf: qualityToCrf(cOptions.quality).toString(),
-      ...(cOptions.width > 0 && { width: cOptions.width }),
-    };
-    const aSecondOfVideo = await estimateSize(file, options);
-    if (!aSecondOfVideo) return;
-    const totalSize = aSecondOfVideo * duration;
-    setEstimatedSize(totalSize);
-  };
+  //   const options = {
+  //     crf: qualityToCrf(cOptions.quality).toString(),
+  //     ...(cOptions.width > 0 && { width: cOptions.width }),
+  //   };
+  //   const aSecondOfVideo = await estimateSize(file, options);
+  //   if (!aSecondOfVideo) return;
+  //   const totalSize = aSecondOfVideo * duration;
+  //   setEstimatedSize(totalSize);
+  // };
 
   if(isFfmpegLoading) {
     return (
@@ -284,7 +282,7 @@ export default function Dashboard() {
           </div>
           {files && files.length > 0 && (
             <div className="flex flex-col gap-2 mt-auto">
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <Button
                   onClick={() => handleEstimateSize(files[0])}
                   disabled={isEstimating || isTranscoding}
@@ -303,7 +301,7 @@ export default function Dashboard() {
                     MB
                   </p>
                 )}
-              </div>
+              </div> */}
 
               <Button
                 onClick={handleTranscode}
