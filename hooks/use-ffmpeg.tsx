@@ -134,7 +134,6 @@ export const useFfmpeg = () => {
       const ffmpegService = ffmpegServiceRef.current;
       dispatch({ type: "TRANSCODE_START" });
       try {
-        console.log("🚀 ~ useFfmpeg ~ options:", options)
         const result = await ffmpegService.extractThumbnail(file, options);
         dispatch({ type: "TRANSCODE_SUCCESS" });
         return result;

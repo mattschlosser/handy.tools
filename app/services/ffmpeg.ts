@@ -11,6 +11,7 @@ export type TranscodeOptions = {
   format?: string;
   width?: number;
   preset?: PresetOptions;
+  fps?: number;
 };
 
 export type TranscodeOutput = {
@@ -62,13 +63,14 @@ export class FFmpegService {
       format = DEFAULT_FORMAT,
       width,
       preset,
+      fps,
     } = options;
 
     const sanitizedInputFileName = sanitizeFileName(file.name);
     const outputFileName = `${sanitizedInputFileName
       .split(".")
       .slice(0, -1)
-      .join(".")}-compressed.${format}`;
+      .join(".")}-compressed-${new Date().getMilliseconds()}.${format}`;
 
     await this.ffmpeg.createDir(INPUT_DIR);
     await this.ffmpeg.mount("WORKERFS", { files: [file] }, INPUT_DIR);
@@ -81,6 +83,10 @@ export class FFmpegService {
     
     if(preset) {
       args.push("-preset", preset);
+    }
+
+    if(fps) {
+      args.push("-r", `${fps}`);
     }
 
     const result = await this.ffmpeg.exec([
@@ -110,7 +116,7 @@ export class FFmpegService {
     file: File,
     options: TranscodeOptions
   ): Promise<ThumbnailOutput> {
-    const { crf = DEFAULT_CRF, codec = DEFAULT_CODEC, width, preset } = options;
+    const { crf = DEFAULT_CRF, codec = DEFAULT_CODEC, width, preset, fps } = options;
     const tempFileName = "temp.mp4";
     const outputImageFileName = "thumb";
 
@@ -125,6 +131,10 @@ export class FFmpegService {
 
     if(preset) {
       args.push("-preset", preset);
+    }
+
+    if(fps) {
+      args.push("-r", `${fps}`);
     }
 
     console.log("🚀 ~ FFmpegService ~ args:", args)

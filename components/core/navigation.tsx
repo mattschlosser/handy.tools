@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { ModeToggle } from "../ui/mode-toggle";
+import { FireExtinguisher } from "lucide-react";
 
 export function Navigation() {
   return (
@@ -10,6 +11,7 @@ export function Navigation() {
           href="/"
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
+          <FireExtinguisher />
           <div className="text-2xl">Tiny Vid</div>
         </Link>
       </nav>

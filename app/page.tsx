@@ -31,6 +31,7 @@ type CompressionOptions = {
   quality: number;
   width: number;
   preset: PresetOptions;
+  fps: number;
 };
 
 type Thumbnail = {
@@ -90,6 +91,7 @@ export default function Dashboard() {
     quality: 50,
     width: 1000,
     preset: "faster",
+    fps: 30,
   });
 
   const {
@@ -117,6 +119,7 @@ export default function Dashboard() {
     const options: TranscodeOptions = {
       crf: qualityToCrf(cOptions.quality).toString(),
       preset: cOptions.preset,
+      fps: cOptions.fps,
       ...(cOptions.width > 0 && { width: cOptions.width }),
     };
 
@@ -138,19 +141,10 @@ export default function Dashboard() {
       await handleProcessThumbnail(file, cOptions, setThumbnail);
       await handleProcessThumbnail(
         file,
-        { quality: 100, width: 0, preset: "medium" },
+        { quality: 100, width: 0, preset: "medium", fps: 1 },
         setOriginalThumbnail
       );
-
-      // Determine duration of the video in seconds
-      const video = document.createElement("video");
-      video.preload = "metadata";
-      video.src = URL.createObjectURL(file);
-      video.onloadedmetadata = () => {
-        // setDuration(video.duration);
-        URL.revokeObjectURL(video.src);
-        setImageUploading(false);
-      };
+      setImageUploading(false);
     }
   };
 
@@ -163,11 +157,12 @@ export default function Dashboard() {
       return;
     }
 
-    const { quality, width, preset } = options;
+    const { quality, width, preset, fps } = options;
 
     const transcodeOptions = {
       crf: qualityToCrf(quality).toString(),
       preset,
+      fps,
       ...(width > 0 && { width }),
     };
 
@@ -234,6 +229,16 @@ export default function Dashboard() {
     setCOptions(newOptions);
     debouncedHandleProcessThumbnail(newOptions);
   };
+
+  const handleFpsChange = (value: number) => {
+    const newOptions = {
+      ...cOptions,
+      fps: value,
+    };
+
+    setCOptions(newOptions);
+    debouncedHandleProcessThumbnail(newOptions);
+  }
 
   const isDisabled = !isFfmpegLoaded || isTranscoding;
 
@@ -312,22 +317,6 @@ export default function Dashboard() {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="width">Video Width</Label>
-                <Input
-                  disabled={isDisabled}
-                  onChange={(e) => handleWidthChange(e.target.value)}
-                  value={cOptions.width}
-                  type="number"
-                  id="width"
-                  max={6500}
-                  min={0}
-                />
-                <p className="text-sm text-gray-500">
-                  This will shrink/scale the video. Will result in higher/lower
-                  file size
-                </p>
-              </div>
-              <div className="flex flex-col gap-2">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="preset">Preset</Label>
                   <Select
@@ -350,6 +339,37 @@ export default function Dashboard() {
                 <p className="text-sm text-gray-500">
                   A slower preset will provide better compression, but will take
                   longer to process.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="width">Video Width</Label>
+                <Input
+                  disabled={isDisabled}
+                  onChange={(e) => handleWidthChange(e.target.value)}
+                  value={cOptions.width}
+                  type="number"
+                  id="width"
+                  max={6500}
+                  min={0}
+                />
+                <p className="text-sm text-gray-500">
+                  This will shrink/scale the video. Will result in higher/lower
+                  file size
+                </p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="fps">FPS</Label>
+                <Input
+                  disabled={isDisabled}
+                  onChange={(e) => handleFpsChange(parseInt(e.target.value) || 1)}
+                  value={cOptions.fps}
+                  type="number"
+                  id="fps"
+                  max={120}
+                  min={1}
+                />
+                <p className="text-sm text-gray-500">
+                  Frames per second. Lower FPS will result in smaller file size
                 </p>
               </div>
             </div>
