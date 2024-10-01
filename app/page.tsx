@@ -88,7 +88,7 @@ export default function Dashboard() {
   const debounceQualityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [cOptions, setCOptions] = useState<CompressionOptions>({
     quality: 50,
-    width: 0,
+    width: 1000,
     preset: "faster",
   });
 
@@ -331,6 +331,7 @@ export default function Dashboard() {
                 <Input
                   disabled={isDisabled}
                   onChange={(e) => handleWidthChange(e.target.value)}
+                  value={cOptions.width}
                   type="number"
                   id="width"
                   max={6500}
