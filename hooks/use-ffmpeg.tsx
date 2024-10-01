@@ -90,6 +90,11 @@ export const useFfmpeg = () => {
         ffmpegService.ffmpeg.on("progress", (progress) => {
           dispatch({ type: "TRANSCODE_PROGRESS", progress: progress.progress });
         });
+
+        ffmpegService.ffmpeg.on("log", (log) => {
+          console.info(log);
+        });
+
       } catch (error) {
         dispatch({ type: "LOAD_FAILURE", error: (error as Error).message });
       }
@@ -129,6 +134,7 @@ export const useFfmpeg = () => {
       const ffmpegService = ffmpegServiceRef.current;
       dispatch({ type: "TRANSCODE_START" });
       try {
+        console.log("🚀 ~ useFfmpeg ~ options:", options)
         const result = await ffmpegService.extractThumbnail(file, options);
         dispatch({ type: "TRANSCODE_SUCCESS" });
         return result;

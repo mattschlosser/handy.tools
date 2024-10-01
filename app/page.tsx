@@ -18,11 +18,19 @@ import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Preview } from "@/components/core/preview";
-import { TranscodeOptions } from "./services/ffmpeg";
+import { PresetOptions, TranscodeOptions } from "./services/ffmpeg";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type CompressionOptions = {
   quality: number;
   width: number;
+  preset: PresetOptions
 };
 
 type Thumbnail = {
@@ -30,16 +38,58 @@ type Thumbnail = {
   aspectRatio: number;
 };
 
+const presets = [
+  {
+    name: "Ultrafast",
+    value: "ultrafast",
+  },
+  {
+    name: "Superfast",
+    value: "superfast",
+  },
+  {
+    name: "Veryfast",
+    value: "veryfast",
+  },
+  {
+    name: "Faster",
+    value: "faster",
+  },
+  {
+    name: "Fast",
+    value: "fast",
+  },
+  {
+    name: "Medium",
+    value: "medium",
+  },
+  {
+    name: "Slow",
+    value: "slow",
+  },
+  {
+    name: "Slower",
+    value: "slower",
+  },
+  {
+    name: "Veryslow",
+    value: "veryslow",
+  },
+];
+
 export default function Dashboard() {
   const [files, setFiles] = useState<File[]>([]);
   const [thumbnailLoading, setThumbnailLoading] = useState(false);
   const [thumbnail, setThumbnail] = useState<Thumbnail | null>(null);
-  const [originalThumbnail, setOriginalThumbnail] = useState<Thumbnail | null>(null);
+  const [originalThumbnail, setOriginalThumbnail] = useState<Thumbnail | null>(
+    null
+  );
   const [imageUploading, setImageUploading] = useState(false);
   const debounceQualityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [cOptions, setCOptions] = useState<CompressionOptions>({
     quality: 30,
     width: 0,
+    preset: "medium",
   });
 
   const {
@@ -66,6 +116,7 @@ export default function Dashboard() {
 
     const options: TranscodeOptions = {
       crf: qualityToCrf(cOptions.quality).toString(),
+      preset: cOptions.preset,
       ...(cOptions.width > 0 && { width: cOptions.width }),
     };
 
@@ -85,7 +136,11 @@ export default function Dashboard() {
     if (file) {
       setImageUploading(true);
       await handleProcessThumbnail(file, cOptions, setThumbnail);
-      await handleProcessThumbnail(file, { quality: 100, width: 0}, setOriginalThumbnail);
+      await handleProcessThumbnail(
+        file,
+        { quality: 100, width: 0, preset: "medium" },
+        setOriginalThumbnail
+      );
 
       // Determine duration of the video in seconds
       const video = document.createElement("video");
@@ -108,10 +163,11 @@ export default function Dashboard() {
       return;
     }
 
-    const { quality, width } = options;
+    const { quality, width, preset } = options;
 
     const transcodeOptions = {
       crf: qualityToCrf(quality).toString(),
+      preset,
       ...(width > 0 && { width }),
     };
 
@@ -174,27 +230,32 @@ export default function Dashboard() {
     }
   };
 
-  // const handleEstimateSize = async (file: File) => {
-  //   if (!file || !duration) {
-  //     return;
-  //   }
+  const handlePresetChange = (value: string) => {
+    console.log("🚀 ~ handlePresetChange ~ value:", value)
+    const newOptions = {
+      ...cOptions,
+      preset: value as PresetOptions,
+    };
 
-  //   const options = {
-  //     crf: qualityToCrf(cOptions.quality).toString(),
-  //     ...(cOptions.width > 0 && { width: cOptions.width }),
-  //   };
-  //   const aSecondOfVideo = await estimateSize(file, options);
-  //   if (!aSecondOfVideo) return;
-  //   const totalSize = aSecondOfVideo * duration;
-  //   setEstimatedSize(totalSize);
-  // };
+    setCOptions(newOptions);
 
-  if(isFfmpegLoading) {
+    if (files.length > 0) {
+      if (debounceQualityTimerRef.current) {
+        clearTimeout(debounceQualityTimerRef.current);
+      }
+
+      debounceQualityTimerRef.current = setTimeout(() => {
+        handleProcessThumbnail(files[0], newOptions, setThumbnail);
+      }, 300);
+    }
+  };
+
+  if (isFfmpegLoading) {
     return (
       <main className="flex items-center justify-center h-screen">
         <Spinner className="w-20 h-20" />
       </main>
-    )
+    );
   }
 
   return (
@@ -211,28 +272,33 @@ export default function Dashboard() {
                 onDropAccepted={handleFileAccepted}
               />
             )}
-            {imageUploading && <Spinner className="absolute inset-0 m-auto w-12 h-12" />}
-            {files.length > 0 && thumbnail && originalThumbnail && !imageUploading && (
-              <div className="relative w-full h-full flex">
-                <Preview
-                  thumbnail={thumbnail}
-                  originalThumbnail={originalThumbnail}
-                />
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  onClick={() => setFiles([])}
-                  className="absolute top-4 right-4"
-                >
-                  <TrashIcon className="h-5 w-5" />
-                </Button>
-                {thumbnailLoading && (
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <Spinner />
-                  </div>
-                )}
-              </div>
+            {imageUploading && (
+              <Spinner className="absolute inset-0 m-auto w-12 h-12" />
             )}
+            {files.length > 0 &&
+              thumbnail &&
+              originalThumbnail &&
+              !imageUploading && (
+                <div className="relative w-full h-full flex">
+                  <Preview
+                    thumbnail={thumbnail}
+                    originalThumbnail={originalThumbnail}
+                  />
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    onClick={() => setFiles([])}
+                    className="absolute top-4 right-4"
+                  >
+                    <TrashIcon className="h-5 w-5" />
+                  </Button>
+                  {thumbnailLoading && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                      <Spinner />
+                    </div>
+                  )}
+                </div>
+              )}
           </div>
           <Progress value={!isTranscoding ? 0 : progress * 100} />
           {error && (
@@ -276,6 +342,27 @@ export default function Dashboard() {
                 <p className="text-sm text-gray-500">
                   This will shrink/scale the video. Will result in higher/lower
                   file size
+                </p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="preset">Preset</Label>
+                  <Select onValueChange={(value) => handlePresetChange(value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue  defaultValue="medium" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {presets.map((preset) => (
+                        <SelectItem key={preset.value} value={preset.value}>
+                          {preset.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-sm text-gray-500">
+                  Preset to use for compression. Lower is faster at the expense
+                  of quality
                 </p>
               </div>
             </div>

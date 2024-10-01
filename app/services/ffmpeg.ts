@@ -1,13 +1,16 @@
-'use client';
+"use client";
 
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { toBlobURL } from "@ffmpeg/util"
+import { toBlobURL } from "@ffmpeg/util";
+
+export type PresetOptions = 'ultrafast' | 'superfast' | 'veryfast' | 'faster' | 'fast' | 'medium' | 'slow' | 'slower' | 'veryslow';
 
 export type TranscodeOptions = {
   codec?: string;
   crf?: string;
   format?: string;
   width?: number;
+  preset?: PresetOptions;
 };
 
 export type TranscodeOutput = {
@@ -58,6 +61,7 @@ export class FFmpegService {
       crf = DEFAULT_CRF,
       format = DEFAULT_FORMAT,
       width,
+      preset,
     } = options;
 
     const sanitizedInputFileName = sanitizeFileName(file.name);
@@ -70,8 +74,13 @@ export class FFmpegService {
     await this.ffmpeg.mount("WORKERFS", { files: [file] }, INPUT_DIR);
 
     const args = ["-c:v", codec, "-crf", crf];
+
     if (width) {
       args.push("-vf", `scale=${width}:-2`);
+    }
+    
+    if(preset) {
+      args.push("-preset", preset);
     }
 
     const result = await this.ffmpeg.exec([
@@ -101,7 +110,7 @@ export class FFmpegService {
     file: File,
     options: TranscodeOptions
   ): Promise<ThumbnailOutput> {
-    const { crf = DEFAULT_CRF, codec = DEFAULT_CODEC, width } = options;
+    const { crf = DEFAULT_CRF, codec = DEFAULT_CODEC, width, preset } = options;
     const tempFileName = "temp.mp4";
     const outputImageFileName = "thumb";
 
@@ -109,10 +118,16 @@ export class FFmpegService {
     await this.ffmpeg.mount("WORKERFS", { files: [file] }, INPUT_DIR);
 
     const args = ["-c:v", codec, "-crf", crf];
+
     if (width) {
       args.push("-vf", `scale=${width}:-2`);
     }
 
+    if(preset) {
+      args.push("-preset", preset);
+    }
+
+    console.log("🚀 ~ FFmpegService ~ args:", args)
     const tempThumbResult = await this.ffmpeg.exec([
       "-i",
       `${INPUT_DIR}/${file.name}`,
