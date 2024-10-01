@@ -42,6 +42,7 @@ const Dropzone = ({
   dropZoneClassName,
   setFilesUploaded,
   loading,
+  disabled,
   ...props
 }: DropzoneProps) => {
   const dropzone = useDropzone({
@@ -71,11 +72,13 @@ const Dropzone = ({
         <div
           {...dropzone.getRootProps()}
           className={cn(
-            "relative flex justify-center items-center w-full h-32 border-dashed border-2 border-gray-200 rounded-lg hover:bg-accent hover:text-accent-foreground transition-all select-none cursor-pointer",
+            "relative flex justify-center items-center w-full h-32 border-dashed border-2 border-gray-200 rounded-lg transition-all select-none",
+            disabled && "opacity-50 cursor-not-allowed",
+            !disabled && "hover:bg-accent hover:text-accent-foreground cursor-pointer",
             dropZoneClassName
           )}
         >
-          <input {...dropzone.getInputProps()} />
+          <input {...dropzone.getInputProps()} disabled={disabled} />
           <div className="flex items-center flex-col gap-1.5">
             <div className="flex items-center flex-row gap-0.5 text-sm font-medium">
               <Upload className="mr-2 h-4 w-4" /> Drop your files here!

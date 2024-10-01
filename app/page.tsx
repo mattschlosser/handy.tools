@@ -30,7 +30,7 @@ import {
 type CompressionOptions = {
   quality: number;
   width: number;
-  preset: PresetOptions
+  preset: PresetOptions;
 };
 
 type Thumbnail = {
@@ -87,9 +87,9 @@ export default function Dashboard() {
   const [imageUploading, setImageUploading] = useState(false);
   const debounceQualityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [cOptions, setCOptions] = useState<CompressionOptions>({
-    quality: 30,
+    quality: 50,
     width: 0,
-    preset: "medium",
+    preset: "faster",
   });
 
   const {
@@ -231,7 +231,7 @@ export default function Dashboard() {
   };
 
   const handlePresetChange = (value: string) => {
-    console.log("🚀 ~ handlePresetChange ~ value:", value)
+    console.log("🚀 ~ handlePresetChange ~ value:", value);
     const newOptions = {
       ...cOptions,
       preset: value as PresetOptions,
@@ -250,29 +250,24 @@ export default function Dashboard() {
     }
   };
 
-  if (isFfmpegLoading) {
-    return (
-      <main className="flex items-center justify-center h-screen">
-        <Spinner className="w-20 h-20" />
-      </main>
-    );
-  }
+  const isDisabled = !isFfmpegLoaded || isTranscoding;
 
   return (
     <main className="max-w-screen-2xl mx-auto w-full p-4">
       <div className="grid md:grid-cols-3 gap-4 w-full mx-auto">
         <div className="flex flex-col gap-2 md:col-span-2 border p-2 rounded">
           <div className="relative flex items-center justify-center aspect-square">
-            {files.length === 0 && (
+            {(files.length === 0 && !isFfmpegLoading) && (
               <Dropzone
                 containerClassName="w-full h-full"
                 dropZoneClassName="w-full h-full"
                 filesUploaded={files}
                 setFilesUploaded={setFiles}
                 onDropAccepted={handleFileAccepted}
+                disabled={isDisabled}
               />
             )}
-            {imageUploading && (
+            {(imageUploading || isFfmpegLoading) && (
               <Spinner className="absolute inset-0 m-auto w-12 h-12" />
             )}
             {files.length > 0 &&
@@ -318,6 +313,7 @@ export default function Dashboard() {
               <div className="flex flex-col gap-2">
                 <Label htmlFor="quality">Quality</Label>
                 <Slider
+                  disabled={isDisabled}
                   name="quality"
                   id="quality"
                   min={0}
@@ -333,6 +329,7 @@ export default function Dashboard() {
               <div className="flex flex-col gap-2">
                 <Label htmlFor="width">Video Width</Label>
                 <Input
+                  disabled={isDisabled}
                   onChange={(e) => handleWidthChange(e.target.value)}
                   type="number"
                   id="width"
@@ -347,9 +344,13 @@ export default function Dashboard() {
               <div className="flex flex-col gap-2">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="preset">Preset</Label>
-                  <Select onValueChange={(value) => handlePresetChange(value)}>
+                  <Select
+                    value={cOptions.preset}
+                    disabled={isDisabled}
+                    onValueChange={(value) => handlePresetChange(value)}
+                  >
                     <SelectTrigger className="w-full">
-                      <SelectValue  defaultValue="medium" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {presets.map((preset) => (
@@ -361,8 +362,8 @@ export default function Dashboard() {
                   </Select>
                 </div>
                 <p className="text-sm text-gray-500">
-                  Preset to use for compression. Lower is faster at the expense
-                  of quality
+                  A slower preset will provide better compression, but will take
+                  longer to process.
                 </p>
               </div>
             </div>
@@ -390,10 +391,7 @@ export default function Dashboard() {
                 )}
               </div> */}
 
-              <Button
-                onClick={handleTranscode}
-                disabled={isTranscoding || !isFfmpegLoaded}
-              >
+              <Button onClick={handleTranscode} disabled={isDisabled || files.length === 0}>
                 {isTranscoding && (
                   <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                 )}
