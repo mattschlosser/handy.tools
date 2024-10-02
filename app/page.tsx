@@ -43,15 +43,15 @@ type Thumbnail = {
 
 const presets = [
   {
-    name: "Ultrafast",
+    name: "Ultra Fast",
     value: "ultrafast",
   },
   {
-    name: "Superfast",
+    name: "Super Fast",
     value: "superfast",
   },
   {
-    name: "Veryfast",
+    name: "Very Fast",
     value: "veryfast",
   },
   {
@@ -85,8 +85,8 @@ export default function Dashboard() {
   );
   const debounceQualityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [cOptions, setCOptions] = useState<CompressionOptions>({
-    quality: 60,
-    preset: "faster",
+    quality: 65,
+    preset: "veryfast",
     fps: 30,
     scale: 1,
   });
