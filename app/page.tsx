@@ -70,14 +70,6 @@ const presets = [
     name: "Slow",
     value: "slow",
   },
-  {
-    name: "Slower",
-    value: "slower",
-  },
-  {
-    name: "Veryslow",
-    value: "veryslow",
-  },
 ];
 
 export default function Dashboard() {
@@ -327,7 +319,7 @@ export default function Dashboard() {
                 />
                 <p className="text-sm text-gray-500">
                   Lower quality will result in smaller file size. At maximum
-                  quality the video will still be compressed slightly with
+                  quality the video will still be compressed with
                   minimum impact on quality.
                 </p>
               </div>
