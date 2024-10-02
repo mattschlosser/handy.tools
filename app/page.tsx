@@ -76,8 +76,8 @@ const presets = [
 
 export default function Dashboard() {
   const {play: playMusic } = useAudioStore()
-  const [isComplete, setIsComplete] = useState(false); // TODO: change this
-  console.log("🚀 ~ Dashboard ~ isComplete:", isComplete)
+  const [showConfetti, setShowConfetti] = useState(false); // TODO: change this
+  console.log("🚀 ~ Dashboard ~ showConfetti:", showConfetti)
   const [files, setFiles] = useState<File[]>([]);
   const [thumbnail, setThumbnail] = useState<Thumbnail | null>(null);
   const [originalThumbnail, setOriginalThumbnail] = useState<Thumbnail | null>(
@@ -121,10 +121,14 @@ export default function Dashboard() {
       return;
     }
     
-    setIsComplete(false);
     playMusic()
     const result = await transcode(file, cOptions);
-    setIsComplete(true);
+
+    setShowConfetti(true);
+    setTimeout(() => {
+      setShowConfetti(false);
+    }, 5000);
+
     if (!result) return;
     const { file: output, name } = result;
     downloadFile(output, name);
@@ -457,7 +461,7 @@ export default function Dashboard() {
           )}
         </aside>
       </div>
-      {isComplete && (<Confetti />)}
+      {showConfetti && (<Confetti />)}
     </main>
   );
 }
