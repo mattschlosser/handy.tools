@@ -242,88 +242,78 @@ export class FFmpegService {
     this.abortController = new AbortController();
     const abortSignal = signal || this.abortController.signal;
 
-    const { duration: totalDuration } = await getVideoMetadata(file);
+    const { duration: totalDuration, sizeMB: originalSizeMB } =
+      await getVideoMetadata(file);
 
     // Sample at the beginning, middle, and end of the video
     const sampleDuration = ESTIMATE_SAMPLE_DURATION;
-    const samplePositions = [];
+    const samplePosition = Math.min(sampleDuration, totalDuration);
 
-    if (totalDuration > sampleDuration) {
-      samplePositions.push(0);
+    const sampleOutputFileName = `sample_output-${getRandomId()}.mp4`;
+    const originalOutputFileName = `original_output-${getRandomId()}.mp4`;
+    const inputDir = `${INPUT_DIR}-${getRandomId()}`;
+
+    await this.ffmpeg.createDir(inputDir);
+
+    // @ts-expect-error WORKERFS is not defined
+    await this.ffmpeg.mount("WORKERFS", { files: [file] }, inputDir);
+
+    const args = this.transcodeOptionsToArgs(options);
+
+    const result = await Promise.all([
+      this.ffmpeg.exec(
+        [
+          "-ss",
+          samplePosition.toString(),
+          "-i",
+          `${inputDir}/${file.name}`,
+          "-t",
+          sampleDuration.toString(),
+          "-c",
+          "copy",
+          originalOutputFileName,
+        ],
+        TIMEOUT,
+        { signal: abortSignal }
+      ),
+      this.ffmpeg.exec(
+        [
+          "-ss",
+          samplePosition.toString(),
+          "-i",
+          `${inputDir}/${file.name}`,
+          "-t",
+          sampleDuration.toString(),
+          ...args,
+          sampleOutputFileName,
+        ],
+        TIMEOUT,
+        { signal: abortSignal }
+      ),
+    ]);
+
+    if (result.some((r) => r !== 0)) {
+      await this.ffmpeg.unmount(inputDir);
+      await this.ffmpeg.deleteDir(inputDir);
+      throw new Error("Error encoding sample segment");
     }
 
-    // if (totalDuration / 2 > sampleDuration) {
-    //   samplePositions.push(totalDuration / 2);
-    // }
-
-    // if (totalDuration - sampleDuration > 0) {
-    //   samplePositions.push(totalDuration - sampleDuration);
-    // }
-
-    // Process all sample positions in parallel
-    const sampleSizes = await Promise.all(
-      samplePositions.map(async (position) => {
-        const sampleOutputFileName = `sample_output-${getRandomId()}.mp4`;
-        const inputDir = `${INPUT_DIR}-${getRandomId()}`;
-
-        await this.ffmpeg.createDir(inputDir);
-
-        // @ts-expect-error WORKERFS is not defined
-        await this.ffmpeg.mount("WORKERFS", { files: [file] }, inputDir);
-
-        const args = this.transcodeOptionsToArgs(options);
-
-        // Extract a sample segment
-        const result = await this.ffmpeg.exec(
-          [
-            "-ss",
-            position.toString(),
-            "-i",
-            `${inputDir}/${file.name}`,
-            "-t",
-            sampleDuration.toString(),
-            ...args,
-            sampleOutputFileName,
-          ],
-          TIMEOUT,
-          { signal: abortSignal }
-        );
-
-        if (result !== 0) {
-          console.log(
-            "ENCOUDING ERROR",
-            this.ffmpeg,
-            this.ffmpeg.listDir("/"),
-            this.ffmpeg.loaded
-          );
-          throw new Error("Error encoding sample segment");
-        }
-
-        // Read the output file and calculate size
-        const sampleOutputData = await this.ffmpeg.readFile(
-          sampleOutputFileName
-        );
-
-        const sampleSize = (sampleOutputData as Uint8Array).length;
-
-        // Clean up
-        await this.ffmpeg.deleteFile(sampleOutputFileName);
-        await this.ffmpeg.unmount(inputDir);
-        await this.ffmpeg.deleteDir(inputDir);
-
-        return sampleSize;
-      })
+    const sampleOutputData = await this.ffmpeg.readFile(sampleOutputFileName);
+    const originalOutputData = await this.ffmpeg.readFile(
+      originalOutputFileName
     );
+    const sampleOutputSize = (sampleOutputData as Uint8Array).length;
+    const originalOutputSize = (originalOutputData as Uint8Array).length;
 
-    const totalSampleSizeBytes = sampleSizes.reduce(
-      (sum, size) => sum + size,
-      0
-    );
+    const compressionRatio = sampleOutputSize / originalOutputSize;
+    const estimatedSizeMB = originalSizeMB * compressionRatio;
 
-    const averageSampleSizePerSecond =
-      totalSampleSizeBytes / (sampleDuration * samplePositions.length);
-    const estimatedTotalSizeBytes = averageSampleSizePerSecond * totalDuration;
-    const estimatedSizeMB = estimatedTotalSizeBytes / (1024 * 1024);
+    // Clean up
+    await this.ffmpeg.deleteFile(sampleOutputFileName);
+    await this.ffmpeg.deleteFile(originalOutputFileName);
+    await this.ffmpeg.unmount(inputDir);
+    await this.ffmpeg.deleteDir(inputDir);
+
     return Math.round(estimatedSizeMB * 100) / 100; // Round to 2 decimal places
   }
 
