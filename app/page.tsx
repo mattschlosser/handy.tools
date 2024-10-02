@@ -93,8 +93,8 @@ export default function Dashboard() {
   );
   const debounceQualityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [cOptions, setCOptions] = useState<CompressionOptions>({
-    quality: 70,
-    preset: "superfast",
+    quality: 60,
+    preset: "faster",
     fps: 30,
     scale: 1,
   });
