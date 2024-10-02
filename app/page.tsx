@@ -445,7 +445,7 @@ export default function Dashboard() {
               <Separator />
               <Button
                 onClick={handleTranscode}
-                disabled={isDisabled || files.length === 0}
+                disabled={isDisabled || files.length === 0 || isEstimating}
               >
                 {isTranscoding && (
                   <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />

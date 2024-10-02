@@ -9,7 +9,6 @@ import {
   TranscodeOutput,
 } from "@/app/services/ffmpeg";
 
-// ffmpegReducer.ts
 export type FFmpegState = {
   isLoaded: boolean;
   isLoading: boolean;
@@ -34,6 +33,7 @@ export type FFmpegAction =
   | { type: "TRANSCODE_PROGRESS"; progress: number }
   | { type: "TRANSCODE_SUCCESS" }
   | { type: "TRANSCODE_FAILURE"; error: string }
+  | { type: "ABORT" }
   | { type: "RESET_ERROR" };
 
 export function ffmpegReducer(
@@ -85,6 +85,15 @@ export function ffmpegReducer(
       };
     case "RESET_ERROR":
       return { ...state, error: null };
+
+    case "ABORT":
+      return {
+        ...state,
+        isTranscoding: false,
+        isEstimating: false,
+        isProcessingThumbnail: false,
+        progress: 0,
+      };
     default:
       return state;
   }
@@ -119,10 +128,11 @@ export const useFfmpeg = () => {
           dispatch({ type: "TRANSCODE_PROGRESS", progress: progress.progress });
         });
 
-        // ffmpegService.ffmpeg.on("log", (log) => {
-        //   console.info(log);
-        // });
+        ffmpegService.ffmpeg.on("log", (log) => {
+          console.info(log);
+        });
       } catch (error) {
+        console.error(error);
         dispatch({ type: "LOAD_FAILURE", error: (error as Error).message });
       }
     },
@@ -142,6 +152,11 @@ export const useFfmpeg = () => {
         dispatch({ type: "TRANSCODE_SUCCESS" });
         return result;
       } catch (error) {
+        console.error(error);
+        if (error instanceof Error && error.name === "AbortError") {
+          dispatch({ type: "ABORT" });
+          return null;
+        }
         dispatch({
           type: "TRANSCODE_FAILURE",
           error: (error as Error).message,
@@ -162,10 +177,14 @@ export const useFfmpeg = () => {
       dispatch({ type: "PROCESS_THUMBNAIL_START" });
       try {
         const result = await ffmpegService.extractThumbnail(file, options);
-        console.log("Thumbnail extracted:", result);
         dispatch({ type: "PROCESS_THUMBNAIL_SUCCESS" });
         return result;
       } catch (error) {
+        console.error(error);
+        if (error instanceof Error && error.name === "AbortError") {
+          dispatch({ type: "ABORT" });
+          return null;
+        }
         dispatch({
           type: "PROCESS_THUMBNAIL_FAILURE",
           error: (error as Error).message,
@@ -183,11 +202,14 @@ export const useFfmpeg = () => {
       dispatch({ type: "ESTIMATE_START" });
       try {
         const result = await ffmpegService.estimateOutputSize(file, options);
-        console.log("Estimated output size:", result);
         dispatch({ type: "ESTIMATE_SUCCESS" });
         return result;
       } catch (error) {
         console.error(error);
+        if (error instanceof Error && error.name === "AbortError") {
+          dispatch({ type: "ABORT" });
+          return null;
+        }
         dispatch({
           type: "ESTIMATE_FAILURE",
           error: (error as Error).message,
@@ -197,6 +219,13 @@ export const useFfmpeg = () => {
     },
     [ffmpegServiceRef]
   );
+
+  const abort = useCallback(() => {
+    if (ffmpegServiceRef.current) {
+      ffmpegServiceRef.current.abort();
+      dispatch({ type: "ABORT" });
+    }
+  }, [ffmpegServiceRef]);
 
   useEffect(() => {
     if (!isWasmSupported()) {
@@ -217,10 +246,11 @@ export const useFfmpeg = () => {
     () => ({
       ...state,
       load,
+      abort,
       transcode,
       extractThumbnail,
       estimateOutputSize,
     }),
-    [state, load, transcode, extractThumbnail, estimateOutputSize]
+    [state, load, transcode, extractThumbnail, estimateOutputSize, abort]
   );
 };

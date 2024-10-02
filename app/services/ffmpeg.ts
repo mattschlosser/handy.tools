@@ -42,12 +42,14 @@ const DEFAULT_QUALITY = 100;
 const DEFAULT_SCALE = 1;
 const DEFAULT_FPS = 30;
 const INPUT_DIR = "/input";
+const TIMEOUT = -1;
 
 const sanitizeFileName = (name: string) =>
   name.replace(/[^a-z0-9.]/gi, "_").toLowerCase();
 
 export class FFmpegService {
   public ffmpeg: FFmpeg;
+  private abortController: AbortController | null = null;
 
   constructor() {
     this.ffmpeg = new FFmpeg();
@@ -76,7 +78,7 @@ export class FFmpegService {
       preset,
     } = options;
 
-    const args = [];
+    const args = ["-c:a", "copy", "-threads", "4"];
 
     if (codec) {
       args.push("-c:v", codec);
@@ -104,8 +106,11 @@ export class FFmpegService {
 
   async transcode(
     file: File,
-    options: TranscodeOptions
+    options: TranscodeOptions,
+    signal?: AbortSignal
   ): Promise<TranscodeOutput> {
+    this.abortController = new AbortController();
+    const abortSignal = signal || this.abortController.signal;
     const sanitizedInputFileName = sanitizeFileName(file.name);
     const inputDir = `${INPUT_DIR}-${getRandomId()}`;
     const outputFileName = `${sanitizedInputFileName
@@ -120,14 +125,15 @@ export class FFmpegService {
 
     const args = this.transcodeOptionsToArgs(options);
 
-    const result = await this.ffmpeg.exec([
-      "-i",
-      `${inputDir}/${file.name}`,
-      ...args,
-      outputFileName,
-    ]);
+    const result = await this.ffmpeg.exec(
+      ["-i", `${inputDir}/${file.name}`, ...args, outputFileName],
+      TIMEOUT,
+      { signal: abortSignal }
+    );
 
     if (result !== 0) {
+      await this.ffmpeg.unmount(inputDir);
+      await this.ffmpeg.deleteDir(inputDir);
       throw new Error("Video compression error");
     }
 
@@ -146,8 +152,12 @@ export class FFmpegService {
 
   async extractThumbnail(
     file: File,
-    options: TranscodeOptions
+    options: TranscodeOptions,
+    signal?: AbortSignal
   ): Promise<ThumbnailOutput> {
+    this.abortController = new AbortController();
+    const abortSignal = signal || this.abortController.signal;
+
     const tempFileName = `temp-${getRandomId()}.mp4`;
     const outputImageFileName = `thumb-${getRandomId()}.webp`;
     const inputDir = `${INPUT_DIR}-${getRandomId()}`;
@@ -159,39 +169,52 @@ export class FFmpegService {
 
     const args = this.transcodeOptionsToArgs(options);
 
-    const tempThumbResult = await this.ffmpeg.exec([
-      "-i",
-      `${inputDir}/${file.name}`,
-      "-frames:v",
-      "1",
-      ...args,
-      tempFileName,
-    ]);
+    const tempThumbResult = await this.ffmpeg.exec(
+      [
+        "-i",
+        `${inputDir}/${file.name}`,
+        "-frames:v",
+        "1",
+        ...args,
+        tempFileName,
+      ],
+      TIMEOUT,
+      { signal: abortSignal }
+    );
 
     if (tempThumbResult !== 0) {
+      await this.ffmpeg.unmount(inputDir);
+      await this.ffmpeg.deleteDir(inputDir);
       throw new Error("Thumbnail extraction error");
     }
 
     const tempFileData = await this.ffmpeg.readFile(tempFileName);
     const tempData = new Uint8Array(tempFileData as ArrayBuffer);
 
-    const thumbResult = await this.ffmpeg.exec([
-      "-i",
-      tempFileName,
-      "-frames:v",
-      "1",
-      "-f",
-      "image2",
-      "-update",
-      "1",
-      "-c:v",
-      "libwebp",
-      "-preset",
-      "picture",
-      outputImageFileName,
-    ]);
+    const thumbResult = await this.ffmpeg.exec(
+      [
+        "-i",
+        tempFileName,
+        "-frames:v",
+        "1",
+        "-f",
+        "image2",
+        "-update",
+        "1",
+        "-c:v",
+        "libwebp",
+        "-preset",
+        "picture",
+        outputImageFileName,
+      ],
+      TIMEOUT,
+      { signal: abortSignal }
+    );
 
     if (thumbResult !== 0) {
+      await this.ffmpeg.deleteFile(tempFileName);
+      await this.ffmpeg.unmount(inputDir);
+      await this.ffmpeg.deleteDir(inputDir);
       throw new Error("Thumbnail extraction error");
     }
 
@@ -211,8 +234,12 @@ export class FFmpegService {
 
   async estimateOutputSize(
     file: File,
-    options: TranscodeOptions
+    options: TranscodeOptions,
+    signal?: AbortSignal
   ): Promise<number> {
+    this.abortController = new AbortController();
+    const abortSignal = signal || this.abortController.signal;
+
     const { duration: totalDuration } = await getVideoMetadata(file);
 
     // Sample at the beginning, middle, and end of the video
@@ -245,18 +272,28 @@ export class FFmpegService {
         const args = this.transcodeOptionsToArgs(options);
 
         // Extract a sample segment
-        const result = await this.ffmpeg.exec([
-          "-ss",
-          position.toString(),
-          "-i",
-          `${inputDir}/${file.name}`,
-          "-t",
-          sampleDuration.toString(),
-          ...args,
-          sampleOutputFileName,
-        ]);
+        const result = await this.ffmpeg.exec(
+          [
+            "-ss",
+            position.toString(),
+            "-i",
+            `${inputDir}/${file.name}`,
+            "-t",
+            sampleDuration.toString(),
+            ...args,
+            sampleOutputFileName,
+          ],
+          TIMEOUT,
+          { signal: abortSignal }
+        );
 
         if (result !== 0) {
+          console.log(
+            "ENCOUDING ERROR",
+            this.ffmpeg,
+            this.ffmpeg.listDir("/"),
+            this.ffmpeg.loaded
+          );
           throw new Error("Error encoding sample segment");
         }
 
@@ -264,6 +301,7 @@ export class FFmpegService {
         const sampleOutputData = await this.ffmpeg.readFile(
           sampleOutputFileName
         );
+
         const sampleSize = (sampleOutputData as Uint8Array).length;
 
         // Clean up
@@ -289,5 +327,12 @@ export class FFmpegService {
 
   terminate(): void {
     this.ffmpeg.terminate();
+  }
+
+  abort(): void {
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
   }
 }
