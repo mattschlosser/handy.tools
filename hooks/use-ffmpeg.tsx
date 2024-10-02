@@ -15,6 +15,7 @@ export type FFmpegState = {
   isLoading: boolean;
   isTranscoding: boolean;
   isEstimating: boolean;
+  isProcessingThumbnail: boolean;
   progress: number;
   error: { type: string; message: string } | null;
 };
@@ -23,6 +24,12 @@ export type FFmpegAction =
   | { type: "LOAD_START" }
   | { type: "LOAD_SUCCESS" }
   | { type: "LOAD_FAILURE"; error: string }
+  | { type: "PROCESS_THUMBNAIL_START" }
+  | { type: "PROCESS_THUMBNAIL_SUCCESS" }
+  | { type: "PROCESS_THUMBNAIL_FAILURE"; error: string }
+  | { type: "ESTIMATE_START" }
+  | { type: "ESTIMATE_SUCCESS" }
+  | { type: "ESTIMATE_FAILURE"; error: string }
   | { type: "TRANSCODE_START" }
   | { type: "TRANSCODE_PROGRESS"; progress: number }
   | { type: "TRANSCODE_SUCCESS" }
@@ -43,6 +50,26 @@ export function ffmpegReducer(
         ...state,
         isLoading: false,
         error: { type: "Load Error", message: action.error },
+      };
+    case "PROCESS_THUMBNAIL_START":
+      return { ...state, isProcessingThumbnail: true, error: null };
+    case "PROCESS_THUMBNAIL_SUCCESS":
+      return { ...state, isProcessingThumbnail: false };
+    case "PROCESS_THUMBNAIL_FAILURE":
+      return {
+        ...state,
+        isProcessingThumbnail: false,
+        error: { type: "Thumbnail Error", message: action.error },
+      };
+    case "ESTIMATE_START":
+      return { ...state, isEstimating: true, error: null };
+    case "ESTIMATE_SUCCESS":
+      return { ...state, isEstimating: false };
+    case "ESTIMATE_FAILURE":
+      return {
+        ...state,
+        isEstimating: false,
+        error: { type: "Estimate Error", message: action.error },
       };
     case "TRANSCODE_START":
       return { ...state, isTranscoding: true, progress: 0, error: null };
@@ -71,6 +98,7 @@ export const useFfmpeg = () => {
     isLoading: false,
     isTranscoding: false,
     isEstimating: false,
+    isProcessingThumbnail: false,
     progress: 0,
     error: null,
   });
@@ -91,10 +119,9 @@ export const useFfmpeg = () => {
           dispatch({ type: "TRANSCODE_PROGRESS", progress: progress.progress });
         });
 
-        ffmpegService.ffmpeg.on("log", (log) => {
-          console.info(log);
-        });
-
+        // ffmpegService.ffmpeg.on("log", (log) => {
+        //   console.info(log);
+        // });
       } catch (error) {
         dispatch({ type: "LOAD_FAILURE", error: (error as Error).message });
       }
@@ -132,14 +159,37 @@ export const useFfmpeg = () => {
     ): Promise<ThumbnailOutput | null> => {
       if (!ffmpegServiceRef.current) return null;
       const ffmpegService = ffmpegServiceRef.current;
-      dispatch({ type: "TRANSCODE_START" });
+      dispatch({ type: "PROCESS_THUMBNAIL_START" });
       try {
         const result = await ffmpegService.extractThumbnail(file, options);
-        dispatch({ type: "TRANSCODE_SUCCESS" });
+        console.log("Thumbnail extracted:", result);
+        dispatch({ type: "PROCESS_THUMBNAIL_SUCCESS" });
         return result;
       } catch (error) {
         dispatch({
-          type: "TRANSCODE_FAILURE",
+          type: "PROCESS_THUMBNAIL_FAILURE",
+          error: (error as Error).message,
+        });
+        return null;
+      }
+    },
+    [ffmpegServiceRef]
+  );
+
+  const estimateOutputSize = useCallback(
+    async (file: File, options: TranscodeOptions): Promise<number | null> => {
+      if (!ffmpegServiceRef.current) return null;
+      const ffmpegService = ffmpegServiceRef.current;
+      dispatch({ type: "ESTIMATE_START" });
+      try {
+        const result = await ffmpegService.estimateOutputSize(file, options);
+        console.log("Estimated output size:", result);
+        dispatch({ type: "ESTIMATE_SUCCESS" });
+        return result;
+      } catch (error) {
+        console.error(error);
+        dispatch({
+          type: "ESTIMATE_FAILURE",
           error: (error as Error).message,
         });
         return null;
@@ -159,9 +209,8 @@ export const useFfmpeg = () => {
     }
 
     if (!state.isLoaded && !state.isLoading) {
-      void load(''); // use local ffmpeg
+      void load(""); // use local ffmpeg
     }
-  
   }, [load, state.isLoaded, state.isLoading, ffmpegServiceRef]);
 
   return useMemo(
@@ -170,7 +219,8 @@ export const useFfmpeg = () => {
       load,
       transcode,
       extractThumbnail,
+      estimateOutputSize,
     }),
-    [state, load, transcode, extractThumbnail]
+    [state, load, transcode, extractThumbnail, estimateOutputSize]
   );
 };

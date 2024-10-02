@@ -1,15 +1,27 @@
 "use client";
 
+import { getRandomId } from "@/lib/get-random-id";
+import { getVideoMetadata } from "@/lib/get-video-metadata";
+import { qualityToCrf } from "@/lib/quality-to-crf";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { toBlobURL } from "@ffmpeg/util";
 
-export type PresetOptions = 'ultrafast' | 'superfast' | 'veryfast' | 'faster' | 'fast' | 'medium' | 'slow' | 'slower' | 'veryslow';
+export type PresetOptions =
+  | "ultrafast"
+  | "superfast"
+  | "veryfast"
+  | "faster"
+  | "fast"
+  | "medium"
+  | "slow"
+  | "slower"
+  | "veryslow";
 
 export type TranscodeOptions = {
   codec?: string;
-  crf?: string;
+  quality?: number;
   format?: string;
-  width?: number;
+  scale?: number;
   preset?: PresetOptions;
   fps?: number;
 };
@@ -24,9 +36,11 @@ export type ThumbnailOutput = {
   frame: Blob;
 };
 
+const ESTIMATE_SAMPLE_DURATION = 1;
 const DEFAULT_CODEC = "libx264";
-const DEFAULT_CRF = "34";
-const DEFAULT_FORMAT = "mp4";
+const DEFAULT_QUALITY = 100;
+const DEFAULT_SCALE = 1;
+const DEFAULT_FPS = 30;
 const INPUT_DIR = "/input";
 
 const sanitizeFileName = (name: string) =>
@@ -53,45 +67,62 @@ export class FFmpegService {
     });
   }
 
+  transcodeOptionsToArgs(options: TranscodeOptions) {
+    const {
+      codec = DEFAULT_CODEC,
+      quality = DEFAULT_QUALITY,
+      scale = DEFAULT_SCALE,
+      fps = DEFAULT_FPS,
+      preset,
+    } = options;
+
+    const args = [];
+
+    if (codec) {
+      args.push("-c:v", codec);
+    }
+
+    if (quality) {
+      args.push("-crf", qualityToCrf(quality).toString());
+    }
+
+    if (scale) {
+      const scaledWidth = `round(iw*${scale}/2)*2`;
+      args.push("-vf", `scale=${scaledWidth}:-2`);
+    }
+
+    if (preset) {
+      args.push("-preset", preset);
+    }
+
+    if (fps) {
+      args.push("-r", `${fps}`);
+    }
+
+    return args;
+  }
+
   async transcode(
     file: File,
     options: TranscodeOptions
   ): Promise<TranscodeOutput> {
-    const {
-      codec = DEFAULT_CODEC,
-      crf = DEFAULT_CRF,
-      format = DEFAULT_FORMAT,
-      width,
-      preset,
-      fps,
-    } = options;
-
     const sanitizedInputFileName = sanitizeFileName(file.name);
+    const inputDir = `${INPUT_DIR}-${getRandomId()}`;
     const outputFileName = `${sanitizedInputFileName
       .split(".")
       .slice(0, -1)
-      .join(".")}-compressed-${new Date().getMilliseconds()}.${format}`;
+      .join(".")}-compressed-${getRandomId()}.mp4`;
 
-    await this.ffmpeg.createDir(INPUT_DIR);
-    await this.ffmpeg.mount("WORKERFS", { files: [file] }, INPUT_DIR);
+    await this.ffmpeg.createDir(inputDir);
 
-    const args = ["-c:v", codec, "-crf", crf];
+    // @ts-expect-error WORKERFS is not defined
+    await this.ffmpeg.mount("WORKERFS", { files: [file] }, inputDir);
 
-    if (width) {
-      args.push("-vf", `scale=${width}:-2`);
-    }
-    
-    if(preset) {
-      args.push("-preset", preset);
-    }
-
-    if(fps) {
-      args.push("-r", `${fps}`);
-    }
+    const args = this.transcodeOptionsToArgs(options);
 
     const result = await this.ffmpeg.exec([
       "-i",
-      `${INPUT_DIR}/${file.name}`,
+      `${inputDir}/${file.name}`,
       ...args,
       outputFileName,
     ]);
@@ -103,11 +134,12 @@ export class FFmpegService {
     const fileData = await this.ffmpeg.readFile(outputFileName);
     const data = new Uint8Array(fileData as ArrayBuffer);
 
-    await this.ffmpeg.unmount(INPUT_DIR);
-    await this.ffmpeg.deleteDir(INPUT_DIR);
+    await this.ffmpeg.deleteFile(outputFileName);
+    await this.ffmpeg.unmount(inputDir);
+    await this.ffmpeg.deleteDir(inputDir);
 
     return {
-      file: new Blob([data.buffer], { type: `video/${format}` }),
+      file: new Blob([data.buffer], { type: `video/mp4` }),
       name: outputFileName,
     };
   }
@@ -116,31 +148,20 @@ export class FFmpegService {
     file: File,
     options: TranscodeOptions
   ): Promise<ThumbnailOutput> {
-    const { crf = DEFAULT_CRF, codec = DEFAULT_CODEC, width, preset, fps } = options;
-    const tempFileName = "temp.mp4";
-    const outputImageFileName = "thumb";
+    const tempFileName = `temp-${getRandomId()}.mp4`;
+    const outputImageFileName = `thumb-${getRandomId()}.webp`;
+    const inputDir = `${INPUT_DIR}-${getRandomId()}`;
 
-    await this.ffmpeg.createDir(INPUT_DIR);
-    await this.ffmpeg.mount("WORKERFS", { files: [file] }, INPUT_DIR);
+    await this.ffmpeg.createDir(inputDir);
 
-    const args = ["-c:v", codec, "-crf", crf];
+    // @ts-expect-error WORKERFS is not defined
+    await this.ffmpeg.mount("WORKERFS", { files: [file] }, inputDir);
 
-    if (width) {
-      args.push("-vf", `scale=${width}:-2`);
-    }
+    const args = this.transcodeOptionsToArgs(options);
 
-    if(preset) {
-      args.push("-preset", preset);
-    }
-
-    if(fps) {
-      args.push("-r", `${fps}`);
-    }
-
-    console.log("🚀 ~ FFmpegService ~ args:", args)
     const tempThumbResult = await this.ffmpeg.exec([
       "-i",
-      `${INPUT_DIR}/${file.name}`,
+      `${inputDir}/${file.name}`,
       "-frames:v",
       "1",
       ...args,
@@ -165,8 +186,6 @@ export class FFmpegService {
       "1",
       "-c:v",
       "libwebp",
-      "-crf",
-      crf,
       "-preset",
       "picture",
       outputImageFileName,
@@ -179,13 +198,93 @@ export class FFmpegService {
     const fileData = await this.ffmpeg.readFile(outputImageFileName);
     const data = new Uint8Array(fileData as ArrayBuffer);
 
-    await this.ffmpeg.unmount(INPUT_DIR);
-    await this.ffmpeg.deleteDir(INPUT_DIR);
+    await this.ffmpeg.deleteFile(outputImageFileName);
+    await this.ffmpeg.deleteFile(tempFileName);
+    await this.ffmpeg.unmount(inputDir);
+    await this.ffmpeg.deleteDir(inputDir);
 
     return {
       thumbnail: new Blob([data.buffer], { type: "image/webp" }),
       frame: new Blob([tempData.buffer], { type: "video/mp4" }),
     };
+  }
+
+  async estimateOutputSize(
+    file: File,
+    options: TranscodeOptions
+  ): Promise<number> {
+    const { duration: totalDuration } = await getVideoMetadata(file);
+
+    // Sample at the beginning, middle, and end of the video
+    const sampleDuration = ESTIMATE_SAMPLE_DURATION;
+    const samplePositions = [];
+
+    if (totalDuration > sampleDuration) {
+      samplePositions.push(0);
+    }
+
+    if (totalDuration / 2 > sampleDuration) {
+      samplePositions.push(totalDuration / 2);
+    }
+
+    if (totalDuration - sampleDuration > 0) {
+      samplePositions.push(totalDuration - sampleDuration);
+    }
+
+    // Process all sample positions in parallel
+    const sampleSizes = await Promise.all(
+      samplePositions.map(async (position) => {
+        const sampleOutputFileName = `sample_output-${getRandomId()}.mp4`;
+        const inputDir = `${INPUT_DIR}-${getRandomId()}`;
+
+        await this.ffmpeg.createDir(inputDir);
+
+        // @ts-expect-error WORKERFS is not defined
+        await this.ffmpeg.mount("WORKERFS", { files: [file] }, inputDir);
+
+        const args = this.transcodeOptionsToArgs(options);
+
+        // Extract a sample segment
+        const result = await this.ffmpeg.exec([
+          "-ss",
+          position.toString(),
+          "-i",
+          `${inputDir}/${file.name}`,
+          "-t",
+          sampleDuration.toString(),
+          ...args,
+          sampleOutputFileName,
+        ]);
+
+        if (result !== 0) {
+          throw new Error("Error encoding sample segment");
+        }
+
+        // Read the output file and calculate size
+        const sampleOutputData = await this.ffmpeg.readFile(
+          sampleOutputFileName
+        );
+        const sampleSize = (sampleOutputData as Uint8Array).length;
+
+        // Clean up
+        await this.ffmpeg.deleteFile(sampleOutputFileName);
+        await this.ffmpeg.unmount(inputDir);
+        await this.ffmpeg.deleteDir(inputDir);
+
+        return sampleSize;
+      })
+    );
+
+    const totalSampleSizeBytes = sampleSizes.reduce(
+      (sum, size) => sum + size,
+      0
+    );
+
+    const averageSampleSizePerSecond =
+      totalSampleSizeBytes / (sampleDuration * samplePositions.length);
+    const estimatedTotalSizeBytes = averageSampleSizePerSecond * totalDuration;
+    const estimatedSizeMB = estimatedTotalSizeBytes / (1024 * 1024);
+    return Math.round(estimatedSizeMB * 100) / 100; // Round to 2 decimal places
   }
 
   terminate(): void {

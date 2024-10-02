@@ -11,14 +11,13 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { useFfmpeg } from "@/hooks/use-ffmpeg";
-import { qualityToCrf } from "@/lib/quality-to-crf";
 import { useRef, useState } from "react";
 import { downloadFile } from "@/lib/download-file";
 import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Preview } from "@/components/core/preview";
-import { PresetOptions, TranscodeOptions } from "./services/ffmpeg";
+import { PresetOptions } from "./services/ffmpeg";
 import {
   Select,
   SelectContent,
@@ -26,12 +25,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getVideoMetadata, VideoMetadata } from "@/lib/get-video-metadata";
+import { secondsToTimestamp } from "@/lib/seconds-to-timestamp";
+import { Separator } from "@/components/ui/separator";
 
 type CompressionOptions = {
   quality: number;
   preset: PresetOptions;
   fps: number;
-  width?: number;
+  scale: number;
 };
 
 type Thumbnail = {
@@ -80,25 +82,32 @@ const presets = [
 
 export default function Dashboard() {
   const [files, setFiles] = useState<File[]>([]);
-  const [thumbnailLoading, setThumbnailLoading] = useState(false);
   const [thumbnail, setThumbnail] = useState<Thumbnail | null>(null);
   const [originalThumbnail, setOriginalThumbnail] = useState<Thumbnail | null>(
     null
   );
   const [imageUploading, setImageUploading] = useState(false);
+  const [estimatedSize, setEstimatedSize] = useState<number | null>(null);
+  const [videoMetadata, setVideoMetadata] = useState<VideoMetadata | null>(
+    null
+  );
   const debounceQualityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [cOptions, setCOptions] = useState<CompressionOptions>({
     quality: 70,
     preset: "superfast",
     fps: 30,
+    scale: 1,
   });
 
   const {
     error,
     isLoaded: isFfmpegLoaded,
     isLoading: isFfmpegLoading,
-    extractThumbnail,
     isTranscoding,
+    isEstimating,
+    isProcessingThumbnail,
+    estimateOutputSize,
+    extractThumbnail,
     progress,
     transcode,
   } = useFfmpeg();
@@ -115,14 +124,7 @@ export default function Dashboard() {
       return;
     }
 
-    const options: TranscodeOptions = {
-      crf: qualityToCrf(cOptions.quality).toString(),
-      preset: cOptions.preset,
-      fps: cOptions.fps,
-      ...(cOptions.width && cOptions.width > 0 && { width: cOptions.width }),
-    };
-
-    const result = await transcode(file, options);
+    const result = await transcode(file, cOptions);
     if (!result) return;
     const { file: output, name } = result;
     downloadFile(output, name);
@@ -137,13 +139,18 @@ export default function Dashboard() {
 
     if (file) {
       setImageUploading(true);
-      await handleProcessThumbnail(file, cOptions, setThumbnail);
-      await handleProcessThumbnail(
-        file,
-        { quality: 100, width: 0, preset: "medium", fps: 1 },
-        setOriginalThumbnail
-      );
+      await Promise.all([
+        getVideoMetadata(file).then((metadata) => setVideoMetadata(metadata)),
+        handleProcessThumbnail(file, cOptions, setThumbnail),
+        handleProcessThumbnail(
+          file,
+          { quality: 100, scale: 1, preset: "medium", fps: 1 },
+          setOriginalThumbnail
+        )
+      ]);
+
       setImageUploading(false);
+      await handleEstimateOutputSize(file, cOptions)
     }
   };
 
@@ -156,20 +163,9 @@ export default function Dashboard() {
       return;
     }
 
-    const { quality, width, preset, fps } = options;
-
-    const transcodeOptions = {
-      crf: qualityToCrf(quality).toString(),
-      preset,
-      fps,
-      ...(width && width > 0 && { width }),
-    };
-
-    setThumbnailLoading(true);
-    const result = await extractThumbnail(file, transcodeOptions);
+    const result = await extractThumbnail(file, options);
 
     if (!result) {
-      setThumbnailLoading(false);
       return;
     }
 
@@ -183,7 +179,6 @@ export default function Dashboard() {
         url,
         aspectRatio: img.width / img.height,
       });
-      setThumbnailLoading(false);
     };
   };
 
@@ -193,9 +188,24 @@ export default function Dashboard() {
         clearTimeout(debounceQualityTimerRef.current);
       }
 
-      debounceQualityTimerRef.current = setTimeout(() => {
-        handleProcessThumbnail(files[0], options, setThumbnail);
+      debounceQualityTimerRef.current = setTimeout(async () => {
+        await handleProcessThumbnail(files[0], options, setThumbnail)
+        await handleEstimateOutputSize(files[0], options)
       }, 300);
+    }
+  };
+
+  const handleEstimateOutputSize = async (
+    file: File,
+    options: CompressionOptions
+  ) => {
+    if (!isFfmpegLoaded) return;
+
+    try {
+      const size = await estimateOutputSize(file, options);
+      setEstimatedSize(size);
+    } catch (error) {
+      console.error("Error estimating output size:", error);
     }
   };
 
@@ -209,11 +219,10 @@ export default function Dashboard() {
     debouncedHandleProcessThumbnail(newOptions);
   };
 
-  const handleWidthChange = (value: string) => {
-    const width = parseInt(value);
+  const handleScaleChange = (value: number) => {
     const newOptions = {
       ...cOptions,
-      width: width,
+      scale: value,
     };
     setCOptions(newOptions);
     debouncedHandleProcessThumbnail(newOptions);
@@ -240,7 +249,7 @@ export default function Dashboard() {
     }
   };
 
-  const isDisabled = !isFfmpegLoaded || isTranscoding;
+  const isDisabled = !isFfmpegLoaded;
 
   return (
     <main className="max-w-screen-2xl mx-auto w-full p-4">
@@ -277,9 +286,9 @@ export default function Dashboard() {
                   >
                     <TrashIcon className="h-5 w-5" />
                   </Button>
-                  {thumbnailLoading && (
+                  {isProcessingThumbnail && (
                     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                      <Spinner />
+                      <Spinner className="border-white" />
                     </div>
                   )}
                 </div>
@@ -315,6 +324,29 @@ export default function Dashboard() {
                     handleQualityChange(value[0]);
                   }}
                 />
+                <p className="text-sm text-gray-500">
+                  Lower quality will result in smaller file size. At maximum
+                  quality the video will still be compressed slightly with
+                  minimum impact on quality.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="scale">Scale</Label>
+                <Slider
+                  disabled={isDisabled}
+                  name="scale"
+                  id="scale"
+                  min={0.01}
+                  max={1}
+                  step={0.01}
+                  defaultValue={[cOptions.scale]}
+                  value={[cOptions.scale]}
+                  onValueChange={(value) => handleScaleChange(value[0])}
+                />
+                <p className="text-sm text-gray-500">
+                  This will shrink the video dimensions. Will greatly reduce
+                  file size.
+                </p>
               </div>
               <div className="flex flex-col gap-2">
                 <div className="flex flex-col gap-2">
@@ -337,24 +369,9 @@ export default function Dashboard() {
                   </Select>
                 </div>
                 <p className="text-sm text-gray-500">
-                  Compression speed. A slower preset will provide slightly better compression, but will take
-                  longer to process.
-                </p>
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="width">Video Width</Label>
-                <Input
-                  disabled={isDisabled}
-                  onChange={(e) => handleWidthChange(e.target.value)}
-                  value={cOptions.width}
-                  type="number"
-                  id="width"
-                  max={6500}
-                  min={0}
-                />
-                <p className="text-sm text-gray-500">
-                  This will shrink/scale the video. Will result in higher/lower
-                  file size
+                  Compression speed. A slower preset will provide slightly
+                  better compression, but will take longer to process. Faster
+                  values are recommended for most cases.
                 </p>
               </div>
               <div className="flex flex-col gap-2">
@@ -375,27 +392,57 @@ export default function Dashboard() {
           </div>
           {files && files.length > 0 && (
             <div className="flex flex-col gap-2 mt-auto">
-              {/* <div className="flex items-center gap-2">
-                <Button
-                  onClick={() => handleEstimateSize(files[0])}
-                  disabled={isEstimating || isTranscoding}
-                >
-                  {isEstimating && (
-                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  {isEstimating ? "Estimating" : "Estimate Size"}
-                </Button>
-                {estimatedSize && (
-                  <p className="text-sm text-gray-500">
-                    Estimated size:{" "}
-                    {estimatedSize
-                      ? (estimatedSize / 1024 / 1024).toFixed(2)
-                      : 0}
-                    MB
+              <div className="flex flex-col gap-1">
+                {isEstimating && <div className="text-sm text-foreground"><Spinner className="w-4 h-4 text-white" /> Estimating file size...</div>}
+                {videoMetadata?.duration && (
+                  <p className="text-sm text-foreground">
+                    <b>Duration:</b>{" "}
+                    {secondsToTimestamp(videoMetadata.duration)}
                   </p>
                 )}
-              </div> */}
-
+                {videoMetadata?.width && videoMetadata?.height && (
+                  <div className="text-sm text-foreground">
+                    <b>Resolution:</b>{" "}
+                    {cOptions.scale && cOptions.scale !== 1 ? (
+                      <>
+                        <p className="inline-block line-through">
+                          {videoMetadata.width}x${videoMetadata.height}
+                        </p>{" "}
+                        <span>
+                          {(videoMetadata.width * cOptions.scale).toFixed(0)}x
+                          {(videoMetadata.height * cOptions.scale).toFixed(0)}
+                        </span>
+                      </>
+                    ) : (
+                      `${videoMetadata.width}x${videoMetadata.height}`
+                    )}
+                  </div>
+                )}
+                {videoMetadata?.sizeMB && (
+                  <div className="text-sm text-foreground">
+                    <b>File size: </b>
+                    {estimatedSize ? (
+                      <>
+                        <p className="inline-block line-through">
+                          {videoMetadata.sizeMB.toFixed(2)}MB
+                        </p>{" "}
+                        <span>{estimatedSize}MB </span>{" "}
+                        <span>
+                          {(
+                            ((videoMetadata.sizeMB - estimatedSize) /
+                              videoMetadata.sizeMB) *
+                            100
+                          ).toFixed(2)}
+                          %
+                        </span>
+                      </>
+                    ) : (
+                      `${videoMetadata.sizeMB.toFixed(2)}MB`
+                    )}
+                  </div>
+                )}
+              </div>
+              <Separator />
               <Button
                 onClick={handleTranscode}
                 disabled={isDisabled || files.length === 0}
