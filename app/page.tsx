@@ -397,7 +397,7 @@ export default function Dashboard() {
                 {isEstimating && <div className="text-sm text-foreground"><Spinner className="w-4 h-4 text-white" /> Estimating file size...</div>}
                 {videoMetadata?.duration && (
                   <p className="text-sm text-foreground">
-                    <b>Video duration:</b>{" "}
+                    <b>Video Duration:</b>{" "}
                     {secondsToTimestamp(videoMetadata.duration)}
                   </p>
                 )}
