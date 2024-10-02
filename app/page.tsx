@@ -1,6 +1,6 @@
 "use client";
 
-import Confetti from 'react-confetti'
+import Confetti from "react-confetti";
 import { Button } from "@/components/ui/button";
 import Dropzone from "@/components/ui/dropzone";
 import {
@@ -75,7 +75,7 @@ const presets = [
 
 export default function Dashboard() {
   const [showConfetti, setShowConfetti] = useState(false); // TODO: change this
-  console.log("🚀 ~ Dashboard ~ showConfetti:", showConfetti)
+  console.log("🚀 ~ Dashboard ~ showConfetti:", showConfetti);
   const [files, setFiles] = useState<File[]>([]);
   const [thumbnail, setThumbnail] = useState<Thumbnail | null>(null);
   const [originalThumbnail, setOriginalThumbnail] = useState<Thumbnail | null>(
@@ -118,14 +118,10 @@ export default function Dashboard() {
       console.error("No file to transcode");
       return;
     }
-  
+
     const result = await transcode(file, cOptions);
 
     setShowConfetti(true);
-    setTimeout(() => {
-      setShowConfetti(false);
-    }, 5000);
-
     if (!result) return;
     const { file: output, name } = result;
     downloadFile(output, name);
@@ -147,11 +143,11 @@ export default function Dashboard() {
           file,
           { quality: 100, scale: 1, preset: "medium", fps: 1 },
           setOriginalThumbnail
-        )
+        ),
       ]);
 
       setImageUploading(false);
-      await handleEstimateOutputSize(file, cOptions)
+      await handleEstimateOutputSize(file, cOptions);
     }
   };
 
@@ -190,8 +186,8 @@ export default function Dashboard() {
       }
 
       debounceQualityTimerRef.current = setTimeout(async () => {
-        await handleProcessThumbnail(files[0], options, setThumbnail)
-        await handleEstimateOutputSize(files[0], options)
+        await handleProcessThumbnail(files[0], options, setThumbnail);
+        await handleEstimateOutputSize(files[0], options);
       }, 300);
     }
   };
@@ -251,7 +247,7 @@ export default function Dashboard() {
     }
   };
 
-  const isDisabled = !isFfmpegLoaded || isTranscoding
+  const isDisabled = !isFfmpegLoaded || isTranscoding;
 
   return (
     <main className="max-w-screen-2xl mx-auto w-full p-4">
@@ -328,8 +324,8 @@ export default function Dashboard() {
                 />
                 <p className="text-sm text-gray-500">
                   Lower quality will result in smaller file size. At maximum
-                  quality the video will still be compressed with
-                  minimum impact on quality.
+                  quality the video will still be compressed with minimum impact
+                  on quality.
                 </p>
               </div>
               <div className="flex flex-col gap-2">
@@ -395,7 +391,12 @@ export default function Dashboard() {
           {files && files.length > 0 && (
             <div className="flex flex-col gap-2 mt-auto">
               <div className="flex flex-col gap-1">
-                {isEstimating && <div className="text-sm text-foreground"><Spinner className="w-4 h-4 text-white" /> Estimating file size...</div>}
+                {isEstimating && (
+                  <div className="text-sm text-foreground">
+                    <Spinner className="w-4 h-4 text-white" /> Estimating file
+                    size...
+                  </div>
+                )}
                 {videoMetadata?.duration && (
                   <p className="text-sm text-foreground">
                     <b>Video Duration:</b>{" "}
@@ -458,7 +459,14 @@ export default function Dashboard() {
           )}
         </aside>
       </div>
-      {showConfetti && (<Confetti />)}
+      {showConfetti && (
+        <Confetti
+          numberOfPieces={1000}
+          tweenDuration={8000}
+          recycle={false}
+          onConfettiComplete={() => setShowConfetti(false)}
+        />
+      )}
     </main>
   );
 }
