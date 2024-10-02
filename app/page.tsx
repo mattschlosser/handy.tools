@@ -29,7 +29,6 @@ import {
 import { getVideoMetadata, VideoMetadata } from "@/lib/get-video-metadata";
 import { secondsToTimestamp } from "@/lib/seconds-to-timestamp";
 import { Separator } from "@/components/ui/separator";
-import useAudioStore from "@/hooks/use-audio-store";
 
 type CompressionOptions = {
   quality: number;
@@ -75,7 +74,6 @@ const presets = [
 ];
 
 export default function Dashboard() {
-  const {play: playMusic } = useAudioStore()
   const [showConfetti, setShowConfetti] = useState(false); // TODO: change this
   console.log("🚀 ~ Dashboard ~ showConfetti:", showConfetti)
   const [files, setFiles] = useState<File[]>([]);
@@ -120,8 +118,7 @@ export default function Dashboard() {
       console.error("No file to transcode");
       return;
     }
-    
-    playMusic()
+  
     const result = await transcode(file, cOptions);
 
     setShowConfetti(true);
