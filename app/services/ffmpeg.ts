@@ -36,7 +36,7 @@ export type ThumbnailOutput = {
   frame: Blob;
 };
 
-const ESTIMATE_SAMPLE_DURATION = 1;
+const ESTIMATE_SAMPLE_DURATION = 3;
 const DEFAULT_CODEC = "libx264";
 const DEFAULT_QUALITY = 100;
 const DEFAULT_SCALE = 1;
@@ -88,7 +88,7 @@ export class FFmpegService {
       args.push("-crf", qualityToCrf(quality).toString());
     }
 
-    if (scale) {
+    if (scale && scale < 1) {
       const scaledWidth = `round(iw*${scale}/2)*2`;
       args.push("-vf", `scale=${scaledWidth}:-2`);
     }
@@ -100,6 +100,8 @@ export class FFmpegService {
     if (fps) {
       args.push("-r", `${fps}`);
     }
+
+    console.log(`FFMPEG ARGS: ${args}`);
 
     return args;
   }
@@ -250,13 +252,13 @@ export class FFmpegService {
       samplePositions.push(0);
     }
 
-    if (totalDuration / 2 > sampleDuration) {
-      samplePositions.push(totalDuration / 2);
-    }
+    // if (totalDuration / 2 > sampleDuration) {
+    //   samplePositions.push(totalDuration / 2);
+    // }
 
-    if (totalDuration - sampleDuration > 0) {
-      samplePositions.push(totalDuration - sampleDuration);
-    }
+    // if (totalDuration - sampleDuration > 0) {
+    //   samplePositions.push(totalDuration - sampleDuration);
+    // }
 
     // Process all sample positions in parallel
     const sampleSizes = await Promise.all(

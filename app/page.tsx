@@ -246,10 +246,11 @@ export default function Dashboard() {
       };
 
       setCOptions(newOptions);
+      debouncedHandleProcessThumbnail(newOptions);
     }
   };
 
-  const isDisabled = !isFfmpegLoaded;
+  const isDisabled = !isFfmpegLoaded || isTranscoding
 
   return (
     <main className="max-w-screen-2xl mx-auto w-full p-4">
