@@ -1,5 +1,6 @@
 "use client";
 
+import Confetti from 'react-confetti'
 import { Button } from "@/components/ui/button";
 import Dropzone from "@/components/ui/dropzone";
 import {
@@ -75,6 +76,8 @@ const presets = [
 
 export default function Dashboard() {
   const {play: playMusic } = useAudioStore()
+  const [isComplete, setIsComplete] = useState(false); // TODO: change this
+  console.log("🚀 ~ Dashboard ~ isComplete:", isComplete)
   const [files, setFiles] = useState<File[]>([]);
   const [thumbnail, setThumbnail] = useState<Thumbnail | null>(null);
   const [originalThumbnail, setOriginalThumbnail] = useState<Thumbnail | null>(
@@ -117,9 +120,11 @@ export default function Dashboard() {
       console.error("No file to transcode");
       return;
     }
-  
+    
+    setIsComplete(false);
     playMusic()
     const result = await transcode(file, cOptions);
+    setIsComplete(true);
     if (!result) return;
     const { file: output, name } = result;
     downloadFile(output, name);
@@ -452,6 +457,7 @@ export default function Dashboard() {
           )}
         </aside>
       </div>
+      {isComplete && (<Confetti />)}
     </main>
   );
 }
