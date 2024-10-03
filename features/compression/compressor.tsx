@@ -132,94 +132,101 @@ export default function Compressor() {
   const isDisabled = !isFfmpegLoaded || isTranscoding;
 
   return (
-    <div className="grow grid items-start md:grid-cols-3 gap-4 w-full h-full mx-auto">
-      <div className="flex flex-col gap-2 md:col-span-2 border p-2 rounded-md bg-card h-full max-h-[847px]">
-        <div className="relative flex items-center justify-center h-full">
-          {files.length === 0 && !isFfmpegLoading && (
-            <Dropzone
-              containerClassName="w-full h-full"
-              dropZoneClassName="w-full h-full"
-              filesUploaded={files}
-              setFilesUploaded={setFiles}
-              onDropAccepted={handleFileAccepted}
-              disabled={isDisabled}
-            />
-          )}
-          {(videoUploading || isFfmpegLoading) && (
-            <Spinner className="absolute inset-0 m-auto w-12 h-12" />
-          )}
-          {files.length > 0 && videoPreview && !videoUploading && (
-            <div className="relative w-full h-full flex bg-black rounded-md overflow-hidden">
-              <VideoPreview videoPreview={videoPreview} />
-              <Button
-                size="icon"
-                onClick={() => setFiles([])}
-                className="absolute top-4 right-4"
-              >
-                <TrashIcon className="h-5 w-5" />
-              </Button>
-              {isGeneratingPreview && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                  <Spinner className="border-white" />
-                </div>
-              )}
-              {isTranscoding && <Progress
-                className="absolute w-full bottom-0"
-                value={ progress * 100}
-              />}
-            </div>
-          )}
-        </div>
-        {error && (
-          <Alert variant="destructive">
-            <ExclamationTriangleIcon className="h-5 w-5" />
-            <AlertTitle>{error.type || "Error"}</AlertTitle>
-            <AlertDescription>
-              {error.message || "An unexpected error occurred"}
-            </AlertDescription>
-          </Alert>
-        )}
-      </div>
-      <aside className="flex flex-col col-span-1 gap-4 md:max-h-[calc(100dvh-64px-32px)]">
-        <div className="flex flex-col gap-2 border bg-card p-4 rounded-md md:h-full md:overflow-y-auto">
-          <h2 className="text-xl font-semibold">Settings</h2>
-          <VideoSettings
-            isDisabled={isDisabled}
-            cOptions={cOptions}
-            onOptionsChange={handleOptionsChange}
-          />
-        </div>
-        {files && files.length > 0 && (
-          <div className="flex flex-col gap-2 mt-auto border bg-card p-4 rounded-md">
-             <h2 className="text-xl font-semibold">Details</h2>
-            {videoMetadata && (
-              <VideoMetadataDisplay
-                videoMetadata={videoMetadata}
-                cOptions={cOptions}
-                estimatedSize={estimatedSize}
+    <div className="grow flex flex-col gap-4 h-full w-full">
+      <h1 className="text-2xl font-bold">The Compressor</h1>
+      <div className="grow grid items-start md:grid-cols-3 gap-4 w-full h-full mx-auto">
+        <div className="flex flex-col gap-2 md:col-span-2 border p-2 rounded-md bg-card h-full min-h-[300px] max-h-[847px]">
+          <div className="relative flex items-center justify-center h-full">
+            {files.length === 0 && !isFfmpegLoading && (
+              <Dropzone
+                containerClassName="w-full h-full"
+                dropZoneClassName="w-full h-full"
+                filesUploaded={files}
+                setFilesUploaded={setFiles}
+                onDropAccepted={handleFileAccepted}
+                disabled={isDisabled}
               />
             )}
-            <Separator />
-            <Button
-              onClick={handleTranscode}
-              disabled={isDisabled || files.length === 0 || isGeneratingPreview}
-            >
-              {isTranscoding && (
-                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              {isTranscoding ? "Compressing" : "Compress"}
-            </Button>
+            {(videoUploading || isFfmpegLoading) && (
+              <Spinner className="absolute inset-0 m-auto w-12 h-12" />
+            )}
+            {files.length > 0 && videoPreview && !videoUploading && (
+              <div className="relative w-full h-full flex bg-black rounded-md overflow-hidden">
+                <VideoPreview videoPreview={videoPreview} />
+                <Button
+                  size="icon"
+                  onClick={() => setFiles([])}
+                  className="absolute top-4 right-4"
+                >
+                  <TrashIcon className="h-5 w-5" />
+                </Button>
+                {isGeneratingPreview && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <Spinner className="border-white" />
+                  </div>
+                )}
+                {isTranscoding && (
+                  <Progress
+                    className="absolute w-full bottom-0"
+                    value={progress * 100}
+                  />
+                )}
+              </div>
+            )}
           </div>
+          {error && (
+            <Alert variant="destructive">
+              <ExclamationTriangleIcon className="h-5 w-5" />
+              <AlertTitle>{error.type || "Error"}</AlertTitle>
+              <AlertDescription>
+                {error.message || "An unexpected error occurred"}
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+        <aside className="flex flex-col col-span-1 gap-4 md:max-h-[calc(100dvh-64px-32px)]">
+          <div className="flex flex-col gap-2 border bg-card p-4 rounded-md md:h-full md:overflow-y-auto">
+            <h2 className="text-xl font-semibold">Settings</h2>
+            <VideoSettings
+              isDisabled={isDisabled}
+              cOptions={cOptions}
+              onOptionsChange={handleOptionsChange}
+            />
+          </div>
+          {files && files.length > 0 && (
+            <div className="flex flex-col gap-2 mt-auto border bg-card p-4 rounded-md">
+              <h2 className="text-xl font-semibold">Details</h2>
+              {videoMetadata && (
+                <VideoMetadataDisplay
+                  videoMetadata={videoMetadata}
+                  cOptions={cOptions}
+                  estimatedSize={estimatedSize}
+                />
+              )}
+              <Separator />
+              <Button
+                onClick={handleTranscode}
+                disabled={
+                  isDisabled || files.length === 0 || isGeneratingPreview
+                }
+              >
+                {isTranscoding && (
+                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {isTranscoding ? "Compressing" : "Compress"}
+              </Button>
+            </div>
+          )}
+        </aside>
+        {showConfetti && (
+          <Confetti
+            numberOfPieces={1000}
+            tweenDuration={8000}
+            recycle={false}
+            onConfettiComplete={() => setShowConfetti(false)}
+          />
         )}
-      </aside>
-      {showConfetti && (
-        <Confetti
-          numberOfPieces={1000}
-          tweenDuration={8000}
-          recycle={false}
-          onConfettiComplete={() => setShowConfetti(false)}
-        />
-      )}
+      </div>
     </div>
   );
 }

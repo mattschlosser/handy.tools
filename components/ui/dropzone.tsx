@@ -93,7 +93,7 @@ const Dropzone = ({
           <input {...dropzone.getInputProps()} disabled={disabled} />
           <div className="flex items-center flex-col gap-1.5">
             <div className="flex items-center flex-row gap-0.5 text-sm font-medium">
-              <Upload className="mr-2 h-4 w-4" /> Drop your files here!
+              <Upload className="mr-2 h-4 w-4" /> Drop your video here!
             </div>
             {props.maxSize && (
               <div className="text-xs text-gray-400 font-medium">
