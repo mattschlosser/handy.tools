@@ -46,7 +46,7 @@ const toggleConfig: ConfigOption[] = [
     description: "Basic compression with minimal loss in quality",
     options: {
       quality: 90,
-      preset: "veryfast",
+      preset: "superfast",
       fps: 30,
       scale: 1,
     },
@@ -164,7 +164,7 @@ export function VideoSettings({
   };
 
   const handleBasicPresetChange = (value: BasicPresets) => {
-    if (value === basicPreset) return;
+    if (!value) return;
     const preset = toggleConfig.find((config) => config.value === value);
     setBasicPreset(value);
     if (preset) {
@@ -231,7 +231,7 @@ export function VideoSettings({
             onValueChange={(value) => handleScaleChange(value[0])}
           />
           <p className="text-sm text-gray-500">
-            This will shrink the video dimensions. Will greatly reduce file
+            This will shrink the video resolution. Can greatly reduce file
             size.
           </p>
         </div>
@@ -259,7 +259,7 @@ export function VideoSettings({
           </div>
           <p className="text-sm text-gray-500">
             Compression speed. A slower preset will provide slightly better
-            compression, but will take longer to process. Faster values are
+            quality, but will take longer to process. Faster values are
             recommended for most cases.
           </p>
         </div>
@@ -306,7 +306,7 @@ const ToggleItem: React.FC<ToggleItemProps> = ({
   >
     <Icon className="h-7 w-7 flex-shrink-0" />
     <div className="flex flex-col text-left">
-      <Label className="text-sm font-semibold">{title}</Label>
+      <div className="text-sm font-semibold">{title}</div>
       <p className="text-xs">{description}</p>
     </div>
   </ToggleGroupItem>

@@ -41,7 +41,7 @@ export default function Compressor() {
   const debouncePreviewTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [cOptions, setCOptions] = useState<CompressionOptions>({
     quality: 65,
-    preset: "veryfast",
+    preset: "superfast",
     fps: 30,
     scale: 1,
   });
@@ -132,7 +132,7 @@ export default function Compressor() {
   const isDisabled = !isFfmpegLoaded || isTranscoding;
 
   return (
-    <div className="grow flex flex-col gap-4 h-full w-full md:max-h-[calc(100dvh-64px-48px)]">
+    <div className="grow flex flex-col gap-4 h-full w-full overflow-hidden">
       <h1 className="text-2xl font-bold">The Compressor</h1>
       <div className="grow grid items-start md:grid-cols-3 gap-4 w-full h-full mx-auto overflow-hidden">
         <div className="flex flex-col gap-2 md:col-span-2 border p-2 rounded-md bg-card h-full min-h-[300px] max-h-[847px]">
