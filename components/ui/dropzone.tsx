@@ -86,7 +86,8 @@ const Dropzone = ({
           className={cn(
             "relative flex justify-center items-center w-full h-32 border-dashed border-2 border-gray-200 rounded-lg transition-all select-none",
             disabled && "opacity-50 cursor-not-allowed",
-            !disabled && "hover:bg-accent hover:text-accent-foreground cursor-pointer",
+            !disabled &&
+              "hover:bg-accent hover:text-accent-foreground cursor-pointer",
             dropZoneClassName
           )}
         >

@@ -132,9 +132,9 @@ export default function Compressor() {
   const isDisabled = !isFfmpegLoaded || isTranscoding;
 
   return (
-    <div className="grow flex flex-col gap-4 h-full w-full">
+    <div className="grow flex flex-col gap-4 h-full w-full md:max-h-[calc(100dvh-64px-48px)]">
       <h1 className="text-2xl font-bold">The Compressor</h1>
-      <div className="grow grid items-start md:grid-cols-3 gap-4 w-full h-full mx-auto">
+      <div className="grow grid items-start md:grid-cols-3 gap-4 w-full h-full mx-auto overflow-hidden">
         <div className="flex flex-col gap-2 md:col-span-2 border p-2 rounded-md bg-card h-full min-h-[300px] max-h-[847px]">
           <div className="relative flex items-center justify-center h-full">
             {files.length === 0 && !isFfmpegLoading && (
@@ -184,7 +184,7 @@ export default function Compressor() {
             </Alert>
           )}
         </div>
-        <aside className="flex flex-col col-span-1 gap-4 md:max-h-[calc(100dvh-64px-32px)]">
+        <aside className="flex flex-col col-span-1 gap-4 h-full overflow-auto">
           <div className="flex flex-col gap-2 border bg-card p-4 rounded-md md:h-full md:overflow-y-auto">
             <h2 className="text-xl font-semibold">Settings</h2>
             <VideoSettings

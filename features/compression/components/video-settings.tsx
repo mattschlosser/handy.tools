@@ -298,7 +298,8 @@ const ToggleItem: React.FC<ToggleItemProps> = ({
   description,
 }) => (
   <ToggleGroupItem
-    className="flex flex-row w-full justify-start items-center gap-3 h-16 bg-secondary/30"
+    variant='outline'
+    className="flex flex-row w-full justify-start items-center gap-3 h-16"
     value={value}
     name={value}
     aria-label={`Toggle ${value}`}
