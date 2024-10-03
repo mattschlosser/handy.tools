@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { ModeToggle } from "../ui/mode-toggle";
-import { FireExtinguisher, KeyboardMusic, Pause } from "lucide-react";
+import { ChefHatIcon, KeyboardMusic, Pause } from "lucide-react";
 import { Button } from "../ui/button";
 import { useRef, useState } from "react";
 
@@ -27,7 +27,7 @@ export function Navigation() {
           href="/"
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
-          <FireExtinguisher />
+          <ChefHatIcon />
           <div className="text-2xl">Tiny Vid</div>
         </Link>
       </nav>
