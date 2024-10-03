@@ -29,6 +29,8 @@ export type CompressionOptions = {
   fps: number;
   scale: number;
   removeAudio?: boolean;
+  generatePreview?: boolean;
+  previewDuration?: number;
 };
 
 type BasicPresets = "basic" | "super" | "ultra" | "cooked";
@@ -53,6 +55,7 @@ const toggleConfig: ConfigOption[] = [
       preset: "superfast",
       fps: 30,
       scale: 1,
+      generatePreview: true,
     },
   },
   {
@@ -65,6 +68,7 @@ const toggleConfig: ConfigOption[] = [
       preset: "veryfast",
       fps: 30,
       scale: 1,
+      generatePreview: true,
     },
   },
   {
@@ -77,6 +81,7 @@ const toggleConfig: ConfigOption[] = [
       preset: "veryfast",
       fps: 30,
       scale: 1,
+      generatePreview: true,
     },
   },
   {
@@ -89,6 +94,7 @@ const toggleConfig: ConfigOption[] = [
       preset: "veryfast",
       fps: 30,
       scale: 1,
+      generatePreview: true,
     },
   },
 ] as const;
@@ -177,12 +183,29 @@ export function VideoSettings({
     });
   };
 
+  const handlePreviewDurationChange = (value: number) => {
+    onOptionsChange({
+      ...cOptions,
+      previewDuration: value,
+    });
+  };
+
+  const handlePreviewEnabledChange = (value: boolean) => {
+    onOptionsChange({
+      ...cOptions,
+      generatePreview: value,
+    });
+  };
+
   const handleBasicPresetChange = (value: BasicPresets) => {
     if (!value) return;
     const preset = toggleConfig.find((config) => config.value === value);
     setBasicPreset(value);
     if (preset) {
-      onOptionsChange(preset.options);
+      onOptionsChange({
+        ...cOptions,
+        ...preset.options,
+      });
     }
   };
 
@@ -238,7 +261,7 @@ export function VideoSettings({
                   htmlFor="removeAudio"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Remove audio
+                  Remove soundtrack
                 </label>
               </div>
             </div>
@@ -267,7 +290,7 @@ export function VideoSettings({
                 disabled={isDisabled}
                 name="quality"
                 id="quality"
-                min={0}
+                min={1}
                 max={100}
                 step={1}
                 defaultValue={[cOptions.quality]}
@@ -352,15 +375,54 @@ export function VideoSettings({
                 <Checkbox
                   id="removeAudio"
                   checked={cOptions.removeAudio}
+                  disabled={isDisabled}
                   onCheckedChange={(checked) => handleAudioChange(!!checked)}
                 />
                 <label
                   htmlFor="removeAudio"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Remove audio
+                  Remove soundtrack
                 </label>
               </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <h3 className="text-base font-bold">Preview</h3>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="generatePreview"
+                  disabled={isDisabled}
+                  checked={cOptions.generatePreview}
+                  onCheckedChange={(checked) =>
+                    handlePreviewEnabledChange(!!checked)
+                  }
+                />
+                <label
+                  htmlFor="generatePreview"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Automatically Generate previews
+                </label>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label className="text-base font-bold" htmlFor="previewDuration">
+                Preview Duration (seconds)
+              </Label>
+              <Input
+                disabled={isDisabled}
+                onChange={(e) =>
+                  handlePreviewDurationChange(parseInt(e.target.value))
+                }
+                value={cOptions.previewDuration}
+                type="number"
+                min={1}
+                id="previewDuration"
+              />
+              <p className="text-sm text-gray-500">
+                Will change the duration of the preview video. Will provide
+                better estimate of the output file size.
+              </p>
             </div>
           </MotionTabsContent>
         )}

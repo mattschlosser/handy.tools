@@ -25,6 +25,7 @@ export type TranscodeOptions = {
   preset?: PresetOptions;
   fps?: number;
   removeAudio?: boolean;
+  previewDuration?: number;
 };
 
 export type TranscodeOutput = {
@@ -43,7 +44,7 @@ export type PreviewOutput = {
   estimatedSize: number;
 };
 
-const ESTIMATE_SAMPLE_DURATION = 3;
+const DEFAULT_PREVIEW_DURATION = 3;
 const DEFAULT_CODEC = "libx264";
 const DEFAULT_QUALITY = 100;
 const DEFAULT_SCALE = 1;
@@ -261,9 +262,7 @@ export class FFmpegService {
       await getVideoMetadata(file);
 
     // Sample at the beginning, middle, and end of the video
-    const sampleDuration = ESTIMATE_SAMPLE_DURATION;
-    const samplePosition = Math.min(sampleDuration, totalDuration);
-
+    const sampleDuration = Math.min(options.previewDuration || DEFAULT_PREVIEW_DURATION, totalDuration);
     const sampleOutputFileName = `sample_output-${getRandomId()}.mp4`;
     const originalOutputFileName = `original_output-${getRandomId()}.mp4`;
     const inputDir = `${INPUT_DIR}-${getRandomId()}`;
@@ -279,7 +278,7 @@ export class FFmpegService {
       this.ffmpeg.exec(
         [
           "-ss",
-          samplePosition.toString(),
+          '0',
           "-i",
           `${inputDir}/${file.name}`,
           "-t",
@@ -294,7 +293,7 @@ export class FFmpegService {
       this.ffmpeg.exec(
         [
           "-ss",
-          samplePosition.toString(),
+          '0',
           "-i",
           `${inputDir}/${file.name}`,
           "-t",

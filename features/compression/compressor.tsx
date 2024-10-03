@@ -46,6 +46,8 @@ export default function Compressor() {
     fps: 30,
     scale: 1,
     removeAudio: false,
+    generatePreview: true,
+    previewDuration: 3,
   });
 
   const {
@@ -102,7 +104,6 @@ export default function Compressor() {
     options: CompressionOptions
   ) => {
     if (!isFfmpegLoaded) return;
-
     try {
       const result = await generateVideoPreview(file, options);
       if (!result) return;
@@ -128,6 +129,7 @@ export default function Compressor() {
 
   const handleOptionsChange = (options: CompressionOptions) => {
     setCOptions(options);
+    if (!options.generatePreview) return;
     debouncedGeneratePreview(options);
   };
 
@@ -162,10 +164,25 @@ export default function Compressor() {
                 >
                   <TrashIcon className="h-5 w-5" />
                 </Button>
-                {isGeneratingPreview && (
+                {!videoPreview && isGeneratingPreview && (
                   <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                     <Spinner className="border-white" />
                   </div>
+                )}
+                {videoPreview && isGeneratingPreview && (
+                  <AnimatePresence>
+                    <motion.div
+                      className="absolute bottom-1 left-1 backdrop-blur p-1 px-2 rounded-md bg-black bg-opacity-50 flex items-center gap-2"
+                      initial={{ opacity: 0, transform: "translateY(10%)" }}
+                      animate={{ opacity: 1, transform: "translateY(0%)" }}
+                      exit={{ opacity: 0, transform: "translateY(10%)" }}
+                    >
+                      <Spinner className="border-white w-4 h-4 border-2" />
+                      <span className="text-sm text-white">
+                        Generating preview
+                      </span>
+                    </motion.div>
+                  </AnimatePresence>
                 )}
                 {isTranscoding && (
                   <Progress
@@ -212,17 +229,33 @@ export default function Compressor() {
                   />
                 )}
                 <Separator />
-                <Button
-                  onClick={handleTranscode}
-                  disabled={
-                    isDisabled || files.length === 0 || isGeneratingPreview
-                  }
-                >
-                  {isTranscoding && (
-                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                <div className="flex w-full justify-evenly flex-wrap gap-2">
+                  <Button
+                    className="flex-1"
+                    onClick={handleTranscode}
+                    disabled={
+                      isDisabled || files.length === 0 || isGeneratingPreview
+                    }
+                  >
+                    {isTranscoding && (
+                      <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    {isTranscoding ? "Compressing" : "Compress"}
+                  </Button>
+                  {!cOptions.generatePreview && (
+                    <Button
+                      className="flex-1"
+                      variant="secondary"
+                      onClick={() => handleGeneratePreview(files[0], cOptions)}
+                      disabled={isDisabled || isGeneratingPreview}
+                    >
+                      {isGeneratingPreview && (
+                        <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      {isGeneratingPreview ? "Processing" : "Generate Preview"}
+                    </Button>
                   )}
-                  {isTranscoding ? "Compressing" : "Compress"}
-                </Button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
