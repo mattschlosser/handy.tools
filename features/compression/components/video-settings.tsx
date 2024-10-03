@@ -193,9 +193,15 @@ export function VideoSettings({
             key="basic"
             className="flex flex-col gap-1"
             value="basic"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{
+              opacity: 0,
+              translateX: 100,
+            }}
+            animate={{ opacity: 1, translateX: 0 }}
+            exit={{
+              opacity: 0,
+              translateX: -100,
+            }}
           >
             <h3 className="text-base font-bold">Preset</h3>
             <ToggleGroup
@@ -216,9 +222,15 @@ export function VideoSettings({
             key="advanced"
             className="flex flex-col gap-4"
             value="advanced"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{
+              opacity: 0,
+              translateX: -100,
+            }}
+            animate={{ opacity: 1, translateX: 0 }}
+            exit={{
+              opacity: 0,
+              translateX: 100,
+            }}
           >
             <div className="flex flex-col gap-2">
               <Label className="text-base font-bold" htmlFor="quality">
