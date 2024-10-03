@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, AnimatePresence } from "framer-motion";
 import Confetti from "react-confetti";
 import { Button } from "@/components/ui/button";
 import Dropzone from "@/components/ui/dropzone";
@@ -193,30 +194,37 @@ export default function Compressor() {
               onOptionsChange={handleOptionsChange}
             />
           </div>
-          {files && files.length > 0 && (
-            <div className="flex flex-col gap-2 mt-auto border bg-card p-4 rounded-md">
-              <h2 className="text-xl font-semibold">Details</h2>
-              {videoMetadata && (
-                <VideoMetadataDisplay
-                  videoMetadata={videoMetadata}
-                  cOptions={cOptions}
-                  estimatedSize={estimatedSize}
-                />
-              )}
-              <Separator />
-              <Button
-                onClick={handleTranscode}
-                disabled={
-                  isDisabled || files.length === 0 || isGeneratingPreview
-                }
+          <AnimatePresence>
+            {files && files.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col gap-2 mt-auto border bg-card p-4 rounded-md"
               >
-                {isTranscoding && (
-                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                <h2 className="text-xl font-semibold">Details</h2>
+                {videoMetadata && (
+                  <VideoMetadataDisplay
+                    videoMetadata={videoMetadata}
+                    cOptions={cOptions}
+                    estimatedSize={estimatedSize}
+                  />
                 )}
-                {isTranscoding ? "Compressing" : "Compress"}
-              </Button>
-            </div>
-          )}
+                <Separator />
+                <Button
+                  onClick={handleTranscode}
+                  disabled={
+                    isDisabled || files.length === 0 || isGeneratingPreview
+                  }
+                >
+                  {isTranscoding && (
+                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {isTranscoding ? "Compressing" : "Compress"}
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </aside>
         {showConfetti && (
           <Confetti

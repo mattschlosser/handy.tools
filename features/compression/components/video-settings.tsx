@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, AnimatePresence } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ export type CompressionOptions = {
 };
 
 type BasicPresets = "basic" | "super" | "ultra" | "cooked";
+type TabOptions = "basic" | "advanced";
 
 type ConfigOption = {
   value: string;
@@ -120,6 +122,8 @@ export const presets = [
   },
 ] as const;
 
+const MotionTabsContent = motion.create(TabsContent);
+
 interface VideoSettingsProps {
   isDisabled: boolean;
   cOptions: CompressionOptions;
@@ -131,6 +135,7 @@ export function VideoSettings({
   cOptions,
   onOptionsChange,
 }: VideoSettingsProps) {
+  const [activeTab, setActiveTab] = useState<TabOptions>("basic");
   const [basicPreset, setBasicPreset] = useState<BasicPresets>("super");
 
   const handleQualityChange = (value: number) => {
@@ -173,113 +178,138 @@ export function VideoSettings({
   };
 
   return (
-    <Tabs defaultValue="basic" className="w-full">
+    <Tabs
+      value={activeTab}
+      className="w-full"
+      onValueChange={(value) => setActiveTab(value as TabOptions)}
+    >
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="basic">Basic</TabsTrigger>
         <TabsTrigger value="advanced">Advanced</TabsTrigger>
       </TabsList>
-      <TabsContent className="flex flex-col gap-1" value="basic">
-        <h3 className="text-base font-bold">Preset</h3>
-        <ToggleGroup
-          value={basicPreset}
-          onValueChange={handleBasicPresetChange}
-          className="w-full flex-col items-start gap-2"
-          type="single"
-          size="lg"
-        >
-          {toggleConfig.map((config) => (
-            <ToggleItem key={config.value} {...config} />
-          ))}
-        </ToggleGroup>
-      </TabsContent>
-      <TabsContent className="flex flex-col gap-4" value="advanced">
-        <div className="flex flex-col gap-2">
-          <Label className="text-base font-bold" htmlFor="quality">
-            Quality
-          </Label>
-          <Slider
-            disabled={isDisabled}
-            name="quality"
-            id="quality"
-            min={0}
-            max={100}
-            step={1}
-            defaultValue={[cOptions.quality]}
-            value={[cOptions.quality]}
-            onValueChange={(value) => {
-              handleQualityChange(value[0]);
-            }}
-          />
-          <p className="text-sm text-gray-500">
-            Lower quality will result in smaller file size. At maximum quality
-            the video will still be compressed with minimum impact on quality.
-          </p>
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label className="text-base font-bold" htmlFor="scale">
-            Scale
-          </Label>
-          <Slider
-            disabled={isDisabled}
-            name="scale"
-            id="scale"
-            min={0.01}
-            max={1}
-            step={0.01}
-            defaultValue={[cOptions.scale]}
-            value={[cOptions.scale]}
-            onValueChange={(value) => handleScaleChange(value[0])}
-          />
-          <p className="text-sm text-gray-500">
-            This will shrink the video resolution. Can greatly reduce file
-            size.
-          </p>
-        </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-2">
-            <Label className="text-base font-bold" htmlFor="preset">
-              Preset
-            </Label>
-            <Select
-              value={cOptions.preset}
-              disabled={isDisabled}
-              onValueChange={(value) => handlePresetChange(value)}
+      <AnimatePresence initial={false}>
+        {activeTab === "basic" && (
+          <MotionTabsContent
+            key="basic"
+            className="flex flex-col gap-1"
+            value="basic"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <h3 className="text-base font-bold">Preset</h3>
+            <ToggleGroup
+              value={basicPreset}
+              onValueChange={handleBasicPresetChange}
+              className="w-full flex-col items-start gap-2"
+              type="single"
+              size="lg"
             >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {presets.map((preset) => (
-                  <SelectItem key={preset.value} value={preset.value}>
-                    {preset.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <p className="text-sm text-gray-500">
-            Compression speed. A slower preset will provide slightly better
-            quality, but will take longer to process. Faster values are
-            recommended for most cases.
-          </p>
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label className="text-base font-bold" htmlFor="fps">
-            FPS
-          </Label>
-          <Input
-            disabled={isDisabled}
-            onChange={(e) => handleFpsChange(parseInt(e.target.value))}
-            value={cOptions.fps}
-            type="number"
-            id="fps"
-            max={120}
-          />
-          <p className="text-sm text-gray-500">
-            Frames per second. Lower FPS will result in smaller file size
-          </p>
-        </div>
-      </TabsContent>
+              {toggleConfig.map((config) => (
+                <ToggleItem key={config.value} {...config} />
+              ))}
+            </ToggleGroup>
+          </MotionTabsContent>
+        )}
+        {activeTab === "advanced" && (
+          <MotionTabsContent
+            key="advanced"
+            className="flex flex-col gap-4"
+            value="advanced"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="flex flex-col gap-2">
+              <Label className="text-base font-bold" htmlFor="quality">
+                Quality
+              </Label>
+              <Slider
+                disabled={isDisabled}
+                name="quality"
+                id="quality"
+                min={0}
+                max={100}
+                step={1}
+                defaultValue={[cOptions.quality]}
+                value={[cOptions.quality]}
+                onValueChange={(value) => {
+                  handleQualityChange(value[0]);
+                }}
+              />
+              <p className="text-sm text-gray-500">
+                Lower quality will result in smaller file size. At maximum
+                quality the video will still be compressed with minimum impact
+                on quality.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label className="text-base font-bold" htmlFor="scale">
+                Scale
+              </Label>
+              <Slider
+                disabled={isDisabled}
+                name="scale"
+                id="scale"
+                min={0.01}
+                max={1}
+                step={0.01}
+                defaultValue={[cOptions.scale]}
+                value={[cOptions.scale]}
+                onValueChange={(value) => handleScaleChange(value[0])}
+              />
+              <p className="text-sm text-gray-500">
+                This will shrink the video resolution. Can greatly reduce file
+                size.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2">
+                <Label className="text-base font-bold" htmlFor="preset">
+                  Preset
+                </Label>
+                <Select
+                  value={cOptions.preset}
+                  disabled={isDisabled}
+                  onValueChange={(value) => handlePresetChange(value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {presets.map((preset) => (
+                      <SelectItem key={preset.value} value={preset.value}>
+                        {preset.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-sm text-gray-500">
+                Compression speed. A slower preset will provide slightly better
+                quality, but will take longer to process. Faster values are
+                recommended for most cases.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label className="text-base font-bold" htmlFor="fps">
+                FPS
+              </Label>
+              <Input
+                disabled={isDisabled}
+                onChange={(e) => handleFpsChange(parseInt(e.target.value))}
+                value={cOptions.fps}
+                type="number"
+                id="fps"
+                max={120}
+              />
+              <p className="text-sm text-gray-500">
+                Frames per second. Lower FPS will result in smaller file size
+              </p>
+            </div>
+          </MotionTabsContent>
+        )}
+      </AnimatePresence>
     </Tabs>
   );
 }
@@ -298,7 +328,7 @@ const ToggleItem: React.FC<ToggleItemProps> = ({
   description,
 }) => (
   <ToggleGroupItem
-    variant='outline'
+    variant="outline"
     className="flex flex-row w-full justify-start items-center gap-3 h-16"
     value={value}
     name={value}
