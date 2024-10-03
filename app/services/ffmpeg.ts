@@ -24,6 +24,7 @@ export type TranscodeOptions = {
   scale?: number;
   preset?: PresetOptions;
   fps?: number;
+  removeAudio?: boolean;
 };
 
 export type TranscodeOutput = {
@@ -46,6 +47,7 @@ const ESTIMATE_SAMPLE_DURATION = 3;
 const DEFAULT_CODEC = "libx264";
 const DEFAULT_QUALITY = 100;
 const DEFAULT_SCALE = 1;
+const DEFAULT_REMOVE_AUDIO = false;
 const DEFAULT_FPS = 30;
 const INPUT_DIR = "/input";
 const TIMEOUT = -1;
@@ -81,10 +83,17 @@ export class FFmpegService {
       quality = DEFAULT_QUALITY,
       scale = DEFAULT_SCALE,
       fps = DEFAULT_FPS,
+      removeAudio = DEFAULT_REMOVE_AUDIO,
       preset,
     } = options;
 
-    const args = ["-c:a", "copy", "-threads", "4"];
+    const args = ["-threads", "4"];
+
+    if (removeAudio) {
+      args.push("-an");
+    } else {
+      args.push("-c:a", "copy");
+    }
 
     if (codec) {
       args.push("-c:v", codec);

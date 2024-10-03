@@ -21,12 +21,14 @@ import {
   RocketIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export type CompressionOptions = {
   quality: number;
   preset: (typeof presets)[number]["value"];
   fps: number;
   scale: number;
+  removeAudio?: boolean;
 };
 
 type BasicPresets = "basic" | "super" | "ultra" | "cooked";
@@ -168,6 +170,13 @@ export function VideoSettings({
     }
   };
 
+  const handleAudioChange = (value: boolean) => {
+    onOptionsChange({
+      ...cOptions,
+      removeAudio: value,
+    });
+  };
+
   const handleBasicPresetChange = (value: BasicPresets) => {
     if (!value) return;
     const preset = toggleConfig.find((config) => config.value === value);
@@ -191,7 +200,7 @@ export function VideoSettings({
         {activeTab === "basic" && (
           <MotionTabsContent
             key="basic"
-            className="flex flex-col gap-1"
+            className="flex flex-col gap-4"
             value="basic"
             initial={{
               opacity: 0,
@@ -203,18 +212,36 @@ export function VideoSettings({
               translateX: -100,
             }}
           >
-            <h3 className="text-base font-bold">Preset</h3>
-            <ToggleGroup
-              value={basicPreset}
-              onValueChange={handleBasicPresetChange}
-              className="w-full flex-col items-start gap-2"
-              type="single"
-              size="lg"
-            >
-              {toggleConfig.map((config) => (
-                <ToggleItem key={config.value} {...config} />
-              ))}
-            </ToggleGroup>
+            <div className="flex flex-col gap-2">
+              <h3 className="text-base font-bold">Preset</h3>
+              <ToggleGroup
+                value={basicPreset}
+                onValueChange={handleBasicPresetChange}
+                className="w-full flex-col items-start gap-2"
+                type="single"
+                size="lg"
+              >
+                {toggleConfig.map((config) => (
+                  <ToggleItem key={config.value} {...config} />
+                ))}
+              </ToggleGroup>
+            </div>
+            <div className="flex flex-col gap-2">
+              <h3 className="text-base font-bold">Audio</h3>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="removeAudio"
+                  checked={cOptions.removeAudio}
+                  onCheckedChange={(checked) => handleAudioChange(!!checked)}
+                />
+                <label
+                  htmlFor="removeAudio"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Remove audio
+                </label>
+              </div>
+            </div>
           </MotionTabsContent>
         )}
         {activeTab === "advanced" && (
@@ -318,6 +345,22 @@ export function VideoSettings({
               <p className="text-sm text-gray-500">
                 Frames per second. Lower FPS will result in smaller file size
               </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <h3 className="text-base font-bold">Audio</h3>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="removeAudio"
+                  checked={cOptions.removeAudio}
+                  onCheckedChange={(checked) => handleAudioChange(!!checked)}
+                />
+                <label
+                  htmlFor="removeAudio"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Remove audio
+                </label>
+              </div>
             </div>
           </MotionTabsContent>
         )}

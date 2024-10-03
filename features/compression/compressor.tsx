@@ -45,6 +45,7 @@ export default function Compressor() {
     preset: "superfast",
     fps: 30,
     scale: 1,
+    removeAudio: false,
   });
 
   const {
