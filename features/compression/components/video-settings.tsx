@@ -240,6 +240,7 @@ export function VideoSettings({
               <ToggleGroup
                 value={basicPreset}
                 onValueChange={handleBasicPresetChange}
+                disabled={isDisabled}
                 className="w-full flex-col items-start gap-2"
                 type="single"
                 size="lg"
@@ -254,6 +255,7 @@ export function VideoSettings({
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="removeAudio"
+                  disabled={isDisabled}
                   checked={cOptions.removeAudio}
                   onCheckedChange={(checked) => handleAudioChange(!!checked)}
                 />
