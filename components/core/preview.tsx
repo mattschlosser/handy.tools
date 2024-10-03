@@ -1,46 +1,99 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { ReactCompareSlider } from "react-compare-slider";
-import NextImage from "next/image";
 
-type PreviewProps = {
-  thumbnail: {
-    url: string;
-    aspectRatio: number;
+interface PreviewProps {
+  videoPreview: {
+    original: Blob;
+    compressed: Blob;
   };
-  originalThumbnail: {
-    url: string;
-    aspectRatio: number;
-  };
-};
+}
 
-const Preview: React.FC<PreviewProps> = React.memo((props: PreviewProps) => {
-  const { thumbnail, originalThumbnail } = props;
+function PreviewComponent(props: PreviewProps) {
+  const { videoPreview } = props;
+  const { original, compressed } = videoPreview;
+
+  const originalVideoRef = useRef<HTMLVideoElement>(null);
+  const compressedVideoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const originalVideo = originalVideoRef.current;
+    const compressedVideo = compressedVideoRef.current;
+    let originalEnded = false;
+    let compressedEnded = false;
+
+    if (originalVideo && compressedVideo) {
+      const handleReady = () => {
+        if (
+          originalVideo.readyState === 4 &&
+          compressedVideo.readyState === 4
+        ) {
+          originalVideo.play();
+          compressedVideo.play();
+        }
+      };
+
+      originalVideo.addEventListener("loadeddata", handleReady);
+      compressedVideo.addEventListener("loadeddata", handleReady);
+
+      const tryToPlay = () => {
+        if (!originalEnded || !compressedEnded) return;
+        originalVideo.play();
+        compressedVideo.play();
+        originalEnded = false;
+        compressedEnded = false;
+      };
+
+      const handleFirstEnded = () => {
+        originalEnded = true;
+        tryToPlay();
+      };
+
+      const handleSecondEnded = () => {
+        compressedEnded = true;
+        tryToPlay();
+      };
+
+      originalVideo.addEventListener("ended", handleFirstEnded);
+      compressedVideo.addEventListener("ended", handleSecondEnded);
+
+      return () => {
+        originalVideo.removeEventListener("loadeddata", handleReady);
+        compressedVideo.removeEventListener("loadeddata", handleReady);
+        originalVideo.removeEventListener("ended", handleFirstEnded);
+        compressedVideo.removeEventListener("ended", handleSecondEnded);
+      };
+    }
+  }, []);
 
   return (
     <ReactCompareSlider
       className="w-full h-full"
-      itemOne={
-        <NextImage
-          src={thumbnail.url}
-          alt="Thumbnail"
-          style={{ aspectRatio: thumbnail.aspectRatio }}
-          className="object-contain rounded bg-black"
-          fill
-        />
-      }
-      itemTwo={
-        <NextImage
-          src={originalThumbnail.url}
-          alt="Thumbnail"
-          style={{ aspectRatio: originalThumbnail.aspectRatio }}
-          className="object-contain rounded bg-black"
-          fill
-        />
-      }
+      itemOne={<BlobVideo src={compressed} ref={compressedVideoRef} />}
+      itemTwo={<BlobVideo src={original} ref={originalVideoRef} />}
     />
   );
-});
+}
 
-Preview.displayName = "Preview";
+const BlobVideo = React.forwardRef<HTMLVideoElement, { src: Blob }>(
+  (props, ref) => {
+    const { src } = props;
+    const blobUrl = React.useMemo(() => URL.createObjectURL(src), [src]);
 
-export { Preview };
+    useEffect(() => {
+      return () => URL.revokeObjectURL(blobUrl);
+    }, [blobUrl]);
+
+    return (
+      <video
+        ref={ref}
+        muted
+        className="w-full h-full object-contain"
+        src={blobUrl}
+      />
+    );
+  }
+);
+
+BlobVideo.displayName = "BlobVideo";
+
+export const Preview = React.memo(PreviewComponent);

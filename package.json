@@ -36,6 +36,7 @@
     "react-dropzone": "^14.2.3",
     "react-resizable-panels": "^2.1.4",
     "shadcn-dropzone": "^0.2.1",
+    "sync-video-player": "^1.0.5",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "truncate": "^3.0.0",

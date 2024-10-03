@@ -26,19 +26,14 @@ import { downloadFile } from "@/lib/download-file";
 import { useFfmpeg } from "@/features/compression/hooks/use-ffmpeg";
 import { VideoMetadataDisplay } from "./components/video-metadata-display";
 
-type Thumbnail = {
-  url: string;
-  aspectRatio: number;
-};
-
 export default function Compressor() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
-  const [thumbnail, setThumbnail] = useState<Thumbnail | null>(null);
-  const [originalThumbnail, setOriginalThumbnail] = useState<Thumbnail | null>(
-    null
-  );
-  const [imageUploading, setImageUploading] = useState(false);
+  const [videoPreview, setVideoPreview] = useState<{
+    original: Blob;
+    compressed: Blob;
+  } | null>(null);
+  const [videoUploading, setVideoUploading] = useState(false);
   const [estimatedSize, setEstimatedSize] = useState<number | null>(null);
   const [videoMetadata, setVideoMetadata] = useState<VideoMetadata | null>(
     null
@@ -56,10 +51,8 @@ export default function Compressor() {
     isLoaded: isFfmpegLoaded,
     isLoading: isFfmpegLoading,
     isTranscoding,
-    isEstimating,
-    isProcessingThumbnail,
-    estimateOutputSize,
-    extractThumbnail,
+    isGeneratingPreview,
+    generateVideoPreview,
     progress,
     transcode,
   } = useFfmpeg();
@@ -92,80 +85,48 @@ export default function Compressor() {
     const file = acceptedFiles[0];
 
     if (file) {
-      setImageUploading(true);
+      setVideoUploading(true);
       await Promise.all([
         getVideoMetadata(file).then((metadata) => setVideoMetadata(metadata)),
-        handleProcessThumbnail(file, cOptions, setThumbnail),
-        handleProcessThumbnail(
-          file,
-          { quality: 100, scale: 1, preset: "medium", fps: 1 },
-          setOriginalThumbnail
-        ),
+        handleGeneratePreview(file, cOptions),
       ]);
 
-      setImageUploading(false);
-      await handleEstimateOutputSize(file, cOptions);
+      setVideoUploading(false);
     }
   };
 
-  const handleProcessThumbnail = async (
-    file: File,
-    options: CompressionOptions,
-    onComplete: (thumbnail: Thumbnail) => void
-  ) => {
-    if (!file) {
-      return;
-    }
-
-    const result = await extractThumbnail(file, options);
-
-    if (!result) {
-      return;
-    }
-
-    const { thumbnail } = result;
-
-    const url = URL.createObjectURL(thumbnail);
-    const img = new Image();
-    img.src = url;
-    img.onload = () => {
-      onComplete({
-        url,
-        aspectRatio: img.width / img.height,
-      });
-    };
-  };
-
-  const debouncedHandleProcessThumbnail = (options: CompressionOptions) => {
-    if (files.length > 0) {
-      if (debouncePreviewTimerRef.current) {
-        clearTimeout(debouncePreviewTimerRef.current);
-      }
-
-      debouncePreviewTimerRef.current = setTimeout(async () => {
-        await handleProcessThumbnail(files[0], options, setThumbnail);
-        await handleEstimateOutputSize(files[0], options);
-      }, 300);
-    }
-  };
-
-  const handleEstimateOutputSize = async (
+  const handleGeneratePreview = async (
     file: File,
     options: CompressionOptions
   ) => {
     if (!isFfmpegLoaded) return;
 
     try {
-      const size = await estimateOutputSize(file, options);
+      const result = await generateVideoPreview(file, options);
+      if (!result) return;
+      const { original, compressed, estimatedSize: size } = result;
       setEstimatedSize(size);
+      setVideoPreview({ original, compressed });
     } catch (error) {
       console.error("Error estimating output size:", error);
     }
   };
 
+  const debouncedGeneratePreview = (options: CompressionOptions) => {
+    if (files.length > 0) {
+      if (debouncePreviewTimerRef.current) {
+        clearTimeout(debouncePreviewTimerRef.current);
+      }
+
+      debouncePreviewTimerRef.current = setTimeout(async () => {
+        await handleGeneratePreview(files[0], options);
+      }, 300);
+    }
+  };
+
   const handleOptionsChange = (options: CompressionOptions) => {
     setCOptions(options);
-    debouncedHandleProcessThumbnail(options);
+    debouncedGeneratePreview(options);
   };
 
   const isDisabled = !isFfmpegLoaded || isTranscoding;
@@ -184,33 +145,27 @@ export default function Compressor() {
               disabled={isDisabled}
             />
           )}
-          {(imageUploading || isFfmpegLoading) && (
+          {(videoUploading || isFfmpegLoading) && (
             <Spinner className="absolute inset-0 m-auto w-12 h-12" />
           )}
-          {files.length > 0 &&
-            thumbnail &&
-            originalThumbnail &&
-            !imageUploading && (
-              <div className="relative w-full h-full flex">
-                <Preview
-                  thumbnail={thumbnail}
-                  originalThumbnail={originalThumbnail}
-                />
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  onClick={() => setFiles([])}
-                  className="absolute top-4 right-4"
-                >
-                  <TrashIcon className="h-5 w-5" />
-                </Button>
-                {isProcessingThumbnail && (
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <Spinner className="border-white" />
-                  </div>
-                )}
-              </div>
-            )}
+          {files.length > 0 && videoPreview && !videoUploading && (
+            <div className="relative w-full h-full flex">
+              <Preview videoPreview={videoPreview} />
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={() => setFiles([])}
+                className="absolute top-4 right-4"
+              >
+                <TrashIcon className="h-5 w-5" />
+              </Button>
+              {isGeneratingPreview && (
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                  <Spinner className="border-white" />
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <Progress value={!isTranscoding ? 0 : progress * 100} />
         {error && (
@@ -236,7 +191,6 @@ export default function Compressor() {
           <div className="flex flex-col gap-2 mt-auto">
             {videoMetadata && (
               <VideoMetadataDisplay
-                isEstimating={isEstimating}
                 videoMetadata={videoMetadata}
                 cOptions={cOptions}
                 estimatedSize={estimatedSize}
@@ -245,7 +199,7 @@ export default function Compressor() {
             <Separator />
             <Button
               onClick={handleTranscode}
-              disabled={isDisabled || files.length === 0 || isEstimating}
+              disabled={isDisabled || files.length === 0 || isGeneratingPreview}
             >
               {isTranscoding && (
                 <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />

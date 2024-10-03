@@ -4,6 +4,7 @@ import { useCallback, useEffect, useReducer, useMemo, useRef } from "react";
 import { isWasmSupported } from "@/lib/is-wasm-supported";
 import {
   FFmpegService,
+  PreviewOutput,
   ThumbnailOutput,
   TranscodeOptions,
   TranscodeOutput,
@@ -13,7 +14,7 @@ export type FFmpegState = {
   isLoaded: boolean;
   isLoading: boolean;
   isTranscoding: boolean;
-  isEstimating: boolean;
+  isGeneratingPreview: boolean;
   isProcessingThumbnail: boolean;
   progress: number;
   error: { type: string; message: string } | null;
@@ -26,9 +27,9 @@ export type FFmpegAction =
   | { type: "PROCESS_THUMBNAIL_START" }
   | { type: "PROCESS_THUMBNAIL_SUCCESS" }
   | { type: "PROCESS_THUMBNAIL_FAILURE"; error: string }
-  | { type: "ESTIMATE_START" }
-  | { type: "ESTIMATE_SUCCESS" }
-  | { type: "ESTIMATE_FAILURE"; error: string }
+  | { type: "PREVIEW_START" }
+  | { type: "PREVIEW_SUCCESS" }
+  | { type: "PREVIEW_FAILURE"; error: string }
   | { type: "TRANSCODE_START" }
   | { type: "TRANSCODE_PROGRESS"; progress: number }
   | { type: "TRANSCODE_SUCCESS" }
@@ -61,14 +62,14 @@ export function ffmpegReducer(
         isProcessingThumbnail: false,
         error: { type: "Thumbnail Error", message: action.error },
       };
-    case "ESTIMATE_START":
-      return { ...state, isEstimating: true, error: null };
-    case "ESTIMATE_SUCCESS":
-      return { ...state, isEstimating: false };
-    case "ESTIMATE_FAILURE":
+    case "PREVIEW_START":
+      return { ...state, isGeneratingPreview: true, error: null };
+    case "PREVIEW_SUCCESS":
+      return { ...state, isGeneratingPreview: false };
+    case "PREVIEW_FAILURE":
       return {
         ...state,
-        isEstimating: false,
+        isGeneratingPreview: false,
         error: { type: "Estimate Error", message: action.error },
       };
     case "TRANSCODE_START":
@@ -90,7 +91,7 @@ export function ffmpegReducer(
       return {
         ...state,
         isTranscoding: false,
-        isEstimating: false,
+        isGeneratingPreview: false,
         isProcessingThumbnail: false,
         progress: 0,
       };
@@ -106,7 +107,7 @@ export const useFfmpeg = () => {
     isLoaded: false,
     isLoading: false,
     isTranscoding: false,
-    isEstimating: false,
+    isGeneratingPreview: false,
     isProcessingThumbnail: false,
     progress: 0,
     error: null,
@@ -195,14 +196,17 @@ export const useFfmpeg = () => {
     [ffmpegServiceRef]
   );
 
-  const estimateOutputSize = useCallback(
-    async (file: File, options: TranscodeOptions): Promise<number | null> => {
+  const generateVideoPreview = useCallback(
+    async (
+      file: File,
+      options: TranscodeOptions
+    ): Promise<PreviewOutput | null> => {
       if (!ffmpegServiceRef.current) return null;
       const ffmpegService = ffmpegServiceRef.current;
-      dispatch({ type: "ESTIMATE_START" });
+      dispatch({ type: "PREVIEW_START" });
       try {
-        const result = await ffmpegService.estimateOutputSize(file, options);
-        dispatch({ type: "ESTIMATE_SUCCESS" });
+        const result = await ffmpegService.generatePreview(file, options);
+        dispatch({ type: "PREVIEW_SUCCESS" });
         return result;
       } catch (error) {
         console.error(error);
@@ -211,7 +215,7 @@ export const useFfmpeg = () => {
           return null;
         }
         dispatch({
-          type: "ESTIMATE_FAILURE",
+          type: "PREVIEW_FAILURE",
           error: (error as Error).message,
         });
         return null;
@@ -249,8 +253,8 @@ export const useFfmpeg = () => {
       abort,
       transcode,
       extractThumbnail,
-      estimateOutputSize,
+      generateVideoPreview,
     }),
-    [state, load, transcode, extractThumbnail, estimateOutputSize, abort]
+    [state, load, transcode, extractThumbnail, generateVideoPreview, abort]
   );
 };

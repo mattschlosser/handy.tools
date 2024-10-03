@@ -1,4 +1,3 @@
-import { Spinner } from "@/components/ui/spinner";
 import React from "react";
 import { secondsToTimestamp } from "../lib/seconds-to-timestamp";
 
@@ -14,25 +13,18 @@ interface COptions {
 }
 
 interface VideoMetadataDisplayProps {
-  isEstimating: boolean;
   videoMetadata: VideoMetadata;
   cOptions: COptions;
   estimatedSize?: number | null;
 }
 
 export function VideoMetadataDisplay({
-  isEstimating,
   videoMetadata,
   cOptions,
   estimatedSize,
 }: VideoMetadataDisplayProps) {
   return (
     <div className="flex flex-col gap-1">
-      {isEstimating && (
-        <div className="text-sm text-foreground">
-          <Spinner className="w-4 h-4 text-white" /> Estimating file size...
-        </div>
-      )}
       {videoMetadata?.duration && (
         <p className="text-sm text-foreground">
           <b>Video Duration:</b> {secondsToTimestamp(videoMetadata.duration)}

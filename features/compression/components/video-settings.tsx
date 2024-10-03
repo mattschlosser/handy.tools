@@ -13,10 +13,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
+  BikeIcon,
   CarFrontIcon,
   CookingPotIcon,
   LucideIcon,
-  PersonStandingIcon,
   RocketIcon,
 } from "lucide-react";
 import { useState } from "react";
@@ -41,7 +41,7 @@ type ConfigOption = {
 const toggleConfig: ConfigOption[] = [
   {
     value: "basic",
-    icon: PersonStandingIcon,
+    icon: BikeIcon,
     title: "Basic",
     description: "Basic compression with minimal loss in quality",
     options: {
@@ -79,9 +79,9 @@ const toggleConfig: ConfigOption[] = [
     value: "cooked",
     icon: CookingPotIcon,
     title: "Cooked",
-    description: "Deep fry your video with maximum compression",
+    description: "Deep fried compression with extra crunch",
     options: {
-      quality: 40,
+      quality: 30,
       preset: "veryfast",
       fps: 30,
       scale: 1,

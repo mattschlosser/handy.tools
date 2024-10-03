@@ -36,6 +36,12 @@ export type ThumbnailOutput = {
   frame: Blob;
 };
 
+export type PreviewOutput = {
+  original: Blob;
+  compressed: Blob;
+  estimatedSize: number;
+};
+
 const ESTIMATE_SAMPLE_DURATION = 3;
 const DEFAULT_CODEC = "libx264";
 const DEFAULT_QUALITY = 100;
@@ -234,11 +240,11 @@ export class FFmpegService {
     };
   }
 
-  async estimateOutputSize(
+  async generatePreview(
     file: File,
     options: TranscodeOptions,
     signal?: AbortSignal
-  ): Promise<number> {
+  ): Promise<PreviewOutput> {
     this.abortController = new AbortController();
     const abortSignal = signal || this.abortController.signal;
 
@@ -314,7 +320,15 @@ export class FFmpegService {
     await this.ffmpeg.unmount(inputDir);
     await this.ffmpeg.deleteDir(inputDir);
 
-    return Math.round(estimatedSizeMB * 100) / 100; // Round to 2 decimal places
+    return {
+      original: new Blob([originalOutputData], {
+        type: "video/mp4",
+      }),
+      compressed: new Blob([sampleOutputData], {
+        type: "video/mp4",
+      }),
+      estimatedSize: Math.round(estimatedSizeMB * 100) / 100, // Round to 2 decimal places,
+    };
   }
 
   terminate(): void {
