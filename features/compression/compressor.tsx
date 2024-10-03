@@ -12,7 +12,6 @@ import { Progress } from "@/components/ui/progress";
 import { useRef, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Preview } from "@/components/core/preview";
 import {
   getVideoMetadata,
   VideoMetadata,
@@ -25,6 +24,7 @@ import {
 import { downloadFile } from "@/lib/download-file";
 import { useFfmpeg } from "@/features/compression/hooks/use-ffmpeg";
 import { VideoMetadataDisplay } from "./components/video-metadata-display";
+import { VideoPreview } from "./components/video-preview";
 
 export default function Compressor() {
   const [showConfetti, setShowConfetti] = useState(false);
@@ -132,9 +132,9 @@ export default function Compressor() {
   const isDisabled = !isFfmpegLoaded || isTranscoding;
 
   return (
-    <div className="grid md:grid-cols-3 gap-4 w-full mx-auto">
-      <div className="flex flex-col gap-2 md:col-span-2 border p-2 rounded bg-card">
-        <div className="relative flex items-center justify-center aspect-square">
+    <div className="grow grid items-start md:grid-cols-3 gap-4 w-full h-full mx-auto">
+      <div className="flex flex-col gap-2 md:col-span-2 border p-2 rounded-md bg-card h-full max-h-[847px]">
+        <div className="relative flex items-center justify-center h-full">
           {files.length === 0 && !isFfmpegLoading && (
             <Dropzone
               containerClassName="w-full h-full"
@@ -149,8 +149,8 @@ export default function Compressor() {
             <Spinner className="absolute inset-0 m-auto w-12 h-12" />
           )}
           {files.length > 0 && videoPreview && !videoUploading && (
-            <div className="relative w-full h-full flex">
-              <Preview videoPreview={videoPreview} />
+            <div className="relative w-full h-full flex bg-black rounded-md overflow-hidden">
+              <VideoPreview videoPreview={videoPreview} />
               <Button
                 variant="secondary"
                 size="icon"
@@ -164,10 +164,13 @@ export default function Compressor() {
                   <Spinner className="border-white" />
                 </div>
               )}
+              {isTranscoding && <Progress
+                className="absolute w-full bottom-0"
+                value={ progress * 100}
+              />}
             </div>
           )}
         </div>
-        <Progress value={!isTranscoding ? 0 : progress * 100} />
         {error && (
           <Alert variant="destructive">
             <ExclamationTriangleIcon className="h-5 w-5" />
@@ -178,8 +181,8 @@ export default function Compressor() {
           </Alert>
         )}
       </div>
-      <aside className="flex flex-col col-span-1 border bg-card p-4 gap-6 rounded">
-        <div className="flex flex-col gap-2">
+      <aside className="flex flex-col col-span-1 gap-4 md:max-h-[calc(100dvh-64px-32px)]">
+        <div className="flex flex-col gap-2 border bg-card p-4 rounded-md md:h-full md:overflow-y-auto">
           <h2 className="text-xl font-semibold">Settings</h2>
           <VideoSettings
             isDisabled={isDisabled}
@@ -188,7 +191,8 @@ export default function Compressor() {
           />
         </div>
         {files && files.length > 0 && (
-          <div className="flex flex-col gap-2 mt-auto">
+          <div className="flex flex-col gap-2 mt-auto border bg-card p-4 rounded-md">
+             <h2 className="text-xl font-semibold">Details</h2>
             {videoMetadata && (
               <VideoMetadataDisplay
                 videoMetadata={videoMetadata}

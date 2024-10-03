@@ -192,94 +192,92 @@ export function VideoSettings({
           ))}
         </ToggleGroup>
       </TabsContent>
-      <TabsContent value="advanced">
-        <div className="flex flex-col gap-4">
+      <TabsContent className="flex flex-col gap-4" value="advanced">
+        <div className="flex flex-col gap-2">
+          <Label className="text-base font-bold" htmlFor="quality">
+            Quality
+          </Label>
+          <Slider
+            disabled={isDisabled}
+            name="quality"
+            id="quality"
+            min={0}
+            max={100}
+            step={1}
+            defaultValue={[cOptions.quality]}
+            value={[cOptions.quality]}
+            onValueChange={(value) => {
+              handleQualityChange(value[0]);
+            }}
+          />
+          <p className="text-sm text-gray-500">
+            Lower quality will result in smaller file size. At maximum quality
+            the video will still be compressed with minimum impact on quality.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label className="text-base font-bold" htmlFor="scale">
+            Scale
+          </Label>
+          <Slider
+            disabled={isDisabled}
+            name="scale"
+            id="scale"
+            min={0.01}
+            max={1}
+            step={0.01}
+            defaultValue={[cOptions.scale]}
+            value={[cOptions.scale]}
+            onValueChange={(value) => handleScaleChange(value[0])}
+          />
+          <p className="text-sm text-gray-500">
+            This will shrink the video dimensions. Will greatly reduce file
+            size.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-2">
-            <Label className="text-base font-bold" htmlFor="quality">
-              Quality
+            <Label className="text-base font-bold" htmlFor="preset">
+              Preset
             </Label>
-            <Slider
+            <Select
+              value={cOptions.preset}
               disabled={isDisabled}
-              name="quality"
-              id="quality"
-              min={0}
-              max={100}
-              step={1}
-              defaultValue={[cOptions.quality]}
-              value={[cOptions.quality]}
-              onValueChange={(value) => {
-                handleQualityChange(value[0]);
-              }}
-            />
-            <p className="text-sm text-gray-500">
-              Lower quality will result in smaller file size. At maximum quality
-              the video will still be compressed with minimum impact on quality.
-            </p>
+              onValueChange={(value) => handlePresetChange(value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {presets.map((preset) => (
+                  <SelectItem key={preset.value} value={preset.value}>
+                    {preset.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div className="flex flex-col gap-2">
-            <Label className="text-base font-bold" htmlFor="scale">
-              Scale
-            </Label>
-            <Slider
-              disabled={isDisabled}
-              name="scale"
-              id="scale"
-              min={0.01}
-              max={1}
-              step={0.01}
-              defaultValue={[cOptions.scale]}
-              value={[cOptions.scale]}
-              onValueChange={(value) => handleScaleChange(value[0])}
-            />
-            <p className="text-sm text-gray-500">
-              This will shrink the video dimensions. Will greatly reduce file
-              size.
-            </p>
-          </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex flex-col gap-2">
-              <Label className="text-base font-bold" htmlFor="preset">
-                Preset
-              </Label>
-              <Select
-                value={cOptions.preset}
-                disabled={isDisabled}
-                onValueChange={(value) => handlePresetChange(value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {presets.map((preset) => (
-                    <SelectItem key={preset.value} value={preset.value}>
-                      {preset.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <p className="text-sm text-gray-500">
-              Compression speed. A slower preset will provide slightly better
-              compression, but will take longer to process. Faster values are
-              recommended for most cases.
-            </p>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label className="text-base font-bold" htmlFor="fps">
-              FPS
-            </Label>
-            <Input
-              disabled={isDisabled}
-              onChange={(e) => handleFpsChange(parseInt(e.target.value))}
-              value={cOptions.fps}
-              type="number"
-              id="fps"
-              max={120}
-            />
-            <p className="text-sm text-gray-500">
-              Frames per second. Lower FPS will result in smaller file size
-            </p>
-          </div>
+          <p className="text-sm text-gray-500">
+            Compression speed. A slower preset will provide slightly better
+            compression, but will take longer to process. Faster values are
+            recommended for most cases.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label className="text-base font-bold" htmlFor="fps">
+            FPS
+          </Label>
+          <Input
+            disabled={isDisabled}
+            onChange={(e) => handleFpsChange(parseInt(e.target.value))}
+            value={cOptions.fps}
+            type="number"
+            id="fps"
+            max={120}
+          />
+          <p className="text-sm text-gray-500">
+            Frames per second. Lower FPS will result in smaller file size
+          </p>
         </div>
       </TabsContent>
     </Tabs>
@@ -305,7 +303,7 @@ const ToggleItem: React.FC<ToggleItemProps> = ({
     name={value}
     aria-label={`Toggle ${value}`}
   >
-    <Icon className="h-7 w-7" />
+    <Icon className="h-7 w-7 flex-shrink-0" />
     <div className="flex flex-col text-left">
       <Label className="text-sm font-semibold">{title}</Label>
       <p className="text-xs">{description}</p>

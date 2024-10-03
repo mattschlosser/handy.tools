@@ -96,4 +96,4 @@ const BlobVideo = React.forwardRef<HTMLVideoElement, { src: Blob }>(
 
 BlobVideo.displayName = "BlobVideo";
 
-export const Preview = React.memo(PreviewComponent);
+export const VideoPreview = React.memo(PreviewComponent);
