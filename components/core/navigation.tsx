@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { ModeToggle } from "../ui/mode-toggle";
-import { ChefHatIcon, KeyboardMusic, Pause } from "lucide-react";
+import { KeyboardMusic, Pause, PocketKnifeIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { useRef, useState } from "react";
 
@@ -27,8 +27,8 @@ export function Navigation() {
           href="/"
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
-          <ChefHatIcon />
-          <div className="text-2xl">Tiny Vid</div>
+          <PocketKnifeIcon />
+          <div className="text-2xl">Handy Tools</div>
         </Link>
       </nav>
       <div className="ml-auto flex gap-2">
