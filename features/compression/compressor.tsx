@@ -152,7 +152,6 @@ export default function Compressor() {
             <div className="relative w-full h-full flex bg-black rounded-md overflow-hidden">
               <VideoPreview videoPreview={videoPreview} />
               <Button
-                variant="secondary"
                 size="icon"
                 onClick={() => setFiles([])}
                 className="absolute top-4 right-4"
