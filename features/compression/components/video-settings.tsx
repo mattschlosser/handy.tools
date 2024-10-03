@@ -54,8 +54,8 @@ const toggleConfig: ConfigOption[] = [
   {
     value: "super",
     icon: CarFrontIcon,
-    title: "Super",
-    description: "Good compression with some loss in quality",
+    title: "Medium",
+    description: "Medium compression with some loss in quality",
     options: {
       quality: 65,
       preset: "veryfast",
@@ -66,8 +66,8 @@ const toggleConfig: ConfigOption[] = [
   {
     value: "ultra",
     icon: RocketIcon,
-    title: "Ultra",
-    description: "Excellent compression with loss in quality",
+    title: "Strong",
+    description: "String compression with loss in quality",
     options: {
       quality: 50,
       preset: "veryfast",
@@ -79,7 +79,7 @@ const toggleConfig: ConfigOption[] = [
     value: "cooked",
     icon: CookingPotIcon,
     title: "Cooked",
-    description: "Deep fried compression with extra crunch",
+    description: "Deep fried with extra crunch",
     options: {
       quality: 30,
       preset: "veryfast",
