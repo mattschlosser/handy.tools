@@ -31,7 +31,7 @@ export function Navigation() {
           <div className="text-2xl">Tiny Vid</div>
         </Link>
       </nav>
-      <div className="ml-auto flex gap">
+      <div className="ml-auto flex gap-2">
         <Button variant="outline" size="icon" onClick={toggleAudio}>
           {isPlaying ? <Pause /> : <KeyboardMusic />}
         </Button>

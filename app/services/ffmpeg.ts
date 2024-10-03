@@ -1,8 +1,8 @@
 "use client";
 
 import { getRandomId } from "@/lib/get-random-id";
-import { getVideoMetadata } from "@/lib/get-video-metadata";
-import { qualityToCrf } from "@/lib/quality-to-crf";
+import { getVideoMetadata } from "@/features/compression/lib/get-video-metadata";
+import { qualityToCrf } from "@/features/compression/lib/quality-to-crf";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { toBlobURL } from "@ffmpeg/util";
 

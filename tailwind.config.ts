@@ -6,9 +6,13 @@ const config: Config = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
+		'./features/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
   	extend: {
+			fontSize: {
+				xxs: ['0.625rem', '1.1'],
+			},
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
