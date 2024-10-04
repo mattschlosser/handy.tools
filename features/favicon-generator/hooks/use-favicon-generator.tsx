@@ -1,16 +1,19 @@
 "use client";
 
+import { zipBlob } from "@/lib/zip-blob";
 import { MagickService } from "@/services/image-magick";
+
 import { useReducer, useEffect, useRef } from "react";
 
+export type GenerateIconsOptions = {
+  faviconSizes: number[];
+};
 interface MagickState {
   isReady: boolean;
   isLoading: boolean;
   isGenerating: boolean;
   error: { type: string; message: string } | null;
 }
-
-type GenerateFavIconOutput = Blob;
 
 type MagickAction =
   | { type: "INIT_START" }
@@ -20,7 +23,7 @@ type MagickAction =
   | { type: "GENERATE_FAVICON_SUCCESS" }
   | {
       type: "GENERATE_FAVICON_FAILURE";
-      payload: { type: string; message: string, } | null;
+      payload: { type: string; message: string } | null;
     };
 
 function faviconGeneratorReducer(
@@ -55,15 +58,63 @@ export function useFaviconGenerator() {
     error: null,
   });
 
-  const generateFavIcon = async (
-    file: File
-  ): Promise<GenerateFavIconOutput | null> => {
-    console.log("🚀 ~ generateFavIcon ~ file:", file);
+  const generateIcons = async (file: File, options: GenerateIconsOptions) => {
     try {
       dispatch({ type: "GENERATE_FAVICON_START" });
-      const result = await magickServiceRef.current.generateFavicon(file);
+      const { faviconSizes } = options;
+
+      const config = [
+        {
+          size: 16,
+          name: "favicon-16x16.png",
+        },
+        {
+          size: 32,
+          name: "favicon-32x32.png",
+        },
+        {
+          size: 48,
+          name: "favicon-48x48.png",
+        },
+        {
+          size: 64,
+          name: "favicon-64x64.png",
+        },
+        {
+          size: 180,
+          name: "apple-touch-icon.png",
+        },
+        {
+          size: 192,
+          name: "android-chrome-192x192.png",
+        },
+        {
+          size: 512,
+          name: "android-chrome-512x512.png",
+        },
+      ];
+
+      const manifestBlob = createWebManifestBlob("Your site name", "Site Name");
+      const favicon = await magickServiceRef.current.generateFavicon(
+        file,
+        faviconSizes
+      );
+      const icons = await Promise.all(
+        config.map(async ({ size, name }) => {
+          const blob = await magickServiceRef.current.generateIcon(file, size);
+          return { name, blob };
+        })
+      );
+
+      const archive = await zipBlob([
+        ...icons,
+        { name: "favicon.ico", blob: favicon },
+        { name: "site.webmanifest", blob: manifestBlob },
+      ]);
+
       dispatch({ type: "GENERATE_FAVICON_SUCCESS" });
-      return result;
+
+      return archive;
     } catch (error) {
       if (error instanceof Error) {
         dispatch({
@@ -82,6 +133,31 @@ export function useFaviconGenerator() {
 
       return null;
     }
+  };
+
+  const createWebManifestBlob = (name: string, shortName: string): Blob => {
+    const manifest = {
+      name,
+      short_name: shortName,
+      icons: [
+        {
+          src: "/android-chrome-192x192.png",
+          sizes: "192x192",
+          type: "image/png",
+        },
+        {
+          src: "/android-chrome-512x512.png",
+          sizes: "512x512",
+          type: "image/png",
+        },
+      ],
+      theme_color: "#ffffff",
+      background_color: "#ffffff",
+      display: "standalone",
+    };
+
+    const manifestJson = JSON.stringify(manifest, null, 2);
+    return new Blob([manifestJson], { type: "application/manifest+json" });
   };
 
   useEffect(() => {
@@ -110,7 +186,7 @@ export function useFaviconGenerator() {
 
   return {
     ...state,
-    generateFavIcon,
+    generateIcons,
     magickService: magickServiceRef.current,
   };
 }
