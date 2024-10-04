@@ -149,6 +149,20 @@ export default function Compressor() {
                 setFilesUploaded={setFiles}
                 onDropAccepted={handleFileAccepted}
                 disabled={isDisabled}
+                maxFiles={1}
+                maxSize={1024 * 1024 * 1024 * 2}
+                accept={{
+                  "video/mp4": [".mp4"],
+                  "video/mpeg": [".mpeg"],
+                  "video/webm": [".webm"],
+                  "video/quicktime": [".mov"],
+                  "video/3gpp": [".3gp"],
+                  "video/x-msvideo": [".avi"],
+                  "video/x-flv": [".flv"],
+                  "video/x-matroska": [".mkv"],
+                  "video/ogg": [".ogg"],
+                  "video/avi": [".avi"],
+                }}
               />
             )}
             {(videoUploading || isFfmpegLoading) && (

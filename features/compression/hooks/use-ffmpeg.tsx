@@ -8,7 +8,7 @@ import {
   ThumbnailOutput,
   TranscodeOptions,
   TranscodeOutput,
-} from "@/app/services/ffmpeg";
+} from "@/services/ffmpeg";
 
 export type FFmpegState = {
   isLoaded: boolean;
