@@ -6,7 +6,6 @@ import { ExclamationTriangleIcon, ReloadIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
 import { useFaviconGenerator } from "./hooks/use-favicon-generator";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -25,15 +24,6 @@ export default function FaviconGenerator() {
     isReady: isFaviconGeneratorReady,
     generateFavIcon,
   } = useFaviconGenerator();
-  console.log(
-    "🚀 ~ FaviconGenerator ~ isFaviconGeneratorReady:",
-    isFaviconGeneratorReady
-  );
-  console.log(
-    "🚀 ~ FaviconGenerator ~ isFaviconGeneratorLoading:",
-    isFaviconGeneratorLoading
-  );
-  console.log("🚀 ~ FaviconGenerator ~ error:", error);
 
   const handleFileAccepted = (file: File) => {
     setFiles([file]);
@@ -46,7 +36,6 @@ export default function FaviconGenerator() {
       downloadFile(result, "favicon.ico");
       setShowConfetti(true);
     }
-    console.log("🚀 ~ handleGenerateFavicon ~ result:", result);
   };
 
   const isDisabled = isGenerating || isFaviconGeneratorLoading;
