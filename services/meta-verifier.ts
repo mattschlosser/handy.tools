@@ -465,6 +465,13 @@ class MetaVerifierService {
       if (!mimeType) {
         return `Unable to verify MIME type for icon.`;
       } else if (mimeType.toLowerCase() !== attributes["type"].toLowerCase()) {
+        // Exception for .ICO files
+        if (
+          mimeType === "image/vnd.microsoft.icon" &&
+          attributes["type"] === "image/x-icon"
+        ) {
+          return null;
+        }
         return `Incorrect MIME type for icon. Expected "${attributes["type"]}", got "${mimeType}"`;
       }
     }
