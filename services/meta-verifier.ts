@@ -37,6 +37,113 @@ interface MetaTagAttributes {
 class MetaVerifierService {
   private requiredMetaTags: RequiredMetaTag[] = [
     {
+      title: "Page Title",
+      tag: "title",
+      description:
+        "The page title is displayed in the browser tab and search engine results. It should be concise, descriptive, and include relevant keywords to improve SEO and user engagement.",
+      attributes: {},
+    },
+    {
+      title: "Meta Description",
+      tag: "meta",
+      attributes: {
+        name: "description",
+      },
+      description:
+        "The meta description provides a brief summary of the page content. It's displayed in search engine results and can influence click-through rates. A well-crafted description can improve SEO and user engagement.",
+    },
+    {
+      title: "Viewport Meta Tag",
+      tag: "meta",
+      attributes: {
+        name: "viewport",
+      },
+      description:
+        "The viewport meta tag ensures that the page is displayed correctly on mobile devices by setting the viewport width and scaling. It's essential for responsive web design and provides a better user experience on mobile devices.",
+    },
+    {
+      title: "Charset Meta Tag",
+      tag: "meta",
+      attributes: {
+        charset: "utf-8",
+      },
+      description:
+        "The charset meta tag specifies the character encoding for the HTML document. Using UTF-8 ensures compatibility with a wide range of characters and languages, improving accessibility and internationalization.",
+    },
+    {
+      title: "Robots Meta Tag",
+      tag: "meta",
+      attributes: {
+        name: "robots",
+      },
+      description:
+        "The robots meta tag provides instructions to search engine crawlers on how to index and follow links on the page. Common directives include 'index, follow' to allow indexing and link following, or 'noindex, nofollow' to prevent it.",
+    },
+    {
+      title: "Open Graph Title",
+      tag: "meta",
+      attributes: {
+        property: "og:title",
+      },
+      description:
+        "The Open Graph title is used by social media platforms when sharing a link to your site. It should be concise, engaging, and include relevant keywords to attract users and improve click-through rates on social media.",
+    },
+    {
+      title: "Open Graph Description",
+      tag: "meta",
+      attributes: {
+        property: "og:description",
+      },
+      description:
+        "The Open Graph description provides a summary of the page content when shared on social media. It should be compelling, informative, and encourage users to click through to your site.",
+    },
+    {
+      title: "Open Graph Image",
+      tag: "meta",
+      attributes: {
+        property: "og:image",
+      },
+      description:
+        "The Open Graph image is displayed alongside shared links on social media. It should be visually appealing, relevant to the content, and meet the recommended dimensions for optimal display on various platforms.",
+    },
+    {
+      title: "Open Graph Type",
+      tag: "meta",
+      attributes: {
+        property: "og:type",
+        content: "website",
+      },
+      description:
+        "The Open Graph type meta tag defines the type of content being shared, such as 'website', 'article', 'video', etc. Specifying the correct type enhances how your content is displayed on social platforms.",
+    },
+    {
+      title: "Twitter Title",
+      tag: "meta",
+      attributes: {
+        name: "twitter:title",
+      },
+      description:
+        "The Twitter title is used when sharing a link to your site on Twitter. It should be concise, engaging, and include relevant keywords to attract users and improve click-through rates on the platform.",
+    },
+    {
+      title: "Twitter Description",
+      tag: "meta",
+      attributes: {
+        name: "twitter:description",
+      },
+      description:
+        "The Twitter description provides a summary of the page content when shared on Twitter. It should be compelling, informative, and encourage users to click through to your site.",
+    },
+    {
+      title: "Meta Keywords",
+      tag: "meta",
+      attributes: {
+        name: "keywords",
+      },
+      description:
+        "The meta keywords tag lists relevant keywords for the page content. Although not heavily used by major search engines for ranking, it can still provide contextual information and support niche search engines.",
+    },
+    {
       title: "Favicon",
       tag: "link",
       oneOf: [
@@ -59,24 +166,44 @@ class MetaVerifierService {
         "The site favicon is crucial for brand recognition. It appears in browser tabs, bookmarks, and history, helping users quickly identify your site. Support for multiple formats ensures compatibility across different browsers and devices.",
     },
     {
-      title: "16x16 PNG Icon",
+      title: "16x16 PNG or SVG Icon",
       tag: "link",
-      attributes: {
-        rel: "icon",
-        type: "image/png",
-        sizes: "16x16",
-      },
+      oneOf: [
+        {
+          attributes: {
+            rel: "icon",
+            type: "image/png",
+            sizes: "16x16",
+          },
+        },
+        {
+          attributes: {
+            rel: "icon",
+            type: "image/svg+xml",
+          },
+        },
+      ],
       description:
         "A 16x16 favicon is important for older browsers and systems that don't support scalable formats. It provides a crisp, small icon for situations where space is limited, such as in browser tabs or address bars.",
     },
     {
-      title: "32x32 PNG Icon",
+      title: "32x32 PNG or SVG Icon",
       tag: "link",
-      attributes: {
-        rel: "icon",
-        type: "image/png",
-        sizes: "32x32",
-      },
+      oneOf: [
+        {
+          attributes: {
+            rel: "icon",
+            type: "image/png",
+            sizes: "32x32",
+          },
+        },
+        {
+          attributes: {
+            rel: "icon",
+            type: "image/svg+xml",
+          },
+        },
+      ],
       description:
         "A 32x32 offers better quality on high-DPI displays and is useful for bookmarks and other UI elements where a slightly larger icon is beneficial. It provides a good balance between size and detail.",
     },
@@ -276,7 +403,7 @@ class MetaVerifierService {
       const bScore = b.found ? (b.errors.length ? 1 : 2) : 0;
       if (aScore !== bScore) return aScore - bScore;
       return 0;
-    })
+    });
 
     return {
       ...verificationResult,

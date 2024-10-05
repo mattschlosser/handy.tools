@@ -70,7 +70,21 @@ export const metadata: Metadata = {
     "msapplication-TileColor": "#262626",
     "msapplication-TileImage": "/mstile-256x256.png",
   },
+  robots: "index, follow",
+  keywords: [
+    "tools",
+    "developer",
+    "handy",
+    "useful",
+    "websites",
+    "video",
+    "compress",
+    "favicon",
+    "generator",
+    "meta",
+  ],
   openGraph: {
+    type: "website",
     images: [
       {
         url: "/og-image.png",
