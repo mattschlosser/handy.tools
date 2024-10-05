@@ -9,7 +9,7 @@ import { Input } from "./input";
 
 const DefaultTrigger = ({ color }: { color: string }) => (
   <div
-    className="w-full h-10 flex rounded-md items-center justify-center"
+    className="w-full h-10 flex rounded-md border items-center justify-center"
     style={{ backgroundColor: color }}
   />
 );
