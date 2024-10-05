@@ -161,9 +161,25 @@ class MetaVerifierService {
             href: "/favicon.ico",
           },
         },
+        {
+          attributes: {
+            rel: "shortcut icon",
+            href: "/favicon.ico",
+          }
+        }
       ],
       description:
         "The site favicon is crucial for brand recognition. It appears in browser tabs, bookmarks, and history, helping users quickly identify your site. Support for multiple formats ensures compatibility across different browsers and devices.",
+    },
+    {
+      title: "Shortcut Icon",
+      tag: "link",
+      attributes: {
+        rel: "shortcut icon",
+        href: "/favicon.ico",
+      },
+      description:
+        'The Shortcut Icon link rel is a legacy method for specifying favicons. Including it ensures compatibility with older browsers that may not recognize the newer rel="icon" syntax.',
     },
     {
       title: "16x16 PNG or SVG Icon",
@@ -267,16 +283,6 @@ class MetaVerifierService {
       },
       description:
         "The Microsoft Tile Color meta tag sets the background color of your site's tile when pinned to the Windows Start menu. It enhances the visual appeal of your site and provides a more cohesive user experience for Windows users.",
-    },
-    {
-      title: "Shortcut Icon",
-      tag: "link",
-      attributes: {
-        rel: "shortcut icon",
-        href: "/favicon.ico",
-      },
-      description:
-        'The Shortcut Icon link rel is a legacy method for specifying favicons. Including it ensures compatibility with older browsers that may not recognize the newer rel="icon" syntax.',
     },
     {
       title: "Theme Color",
