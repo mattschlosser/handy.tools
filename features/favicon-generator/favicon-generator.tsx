@@ -133,7 +133,7 @@ export default function FaviconGenerator() {
             <div className="flex flex-col gap-2 border bg-card p-4 rounded-md">
               <h2 className="text-xl font-semibold">Settings</h2>
               <div className="flex flex-col gap-2">
-                <h3 className="text-base font-bold">Theme Color</h3>
+                <h3 className="text-base font-bold">Theme Color (Optional)</h3>
                 <ColorPicker
                   value={options.themeColor}
                   onChange={(color) =>
@@ -145,7 +145,7 @@ export default function FaviconGenerator() {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <h3 className="text-base font-bold">Background Color</h3>
+                <h3 className="text-base font-bold">Background Color (Optional)</h3>
                 <ColorPicker
                   value={options.backgroundColor}
                   onChange={(color) =>
