@@ -28,8 +28,8 @@ export default function FaviconGenerator() {
   const [files, setFiles] = useState<File[]>([]);
   const [options, setOptions] = useState<GenerateIconsOptions>({
     faviconSizes: [16, 32, 48, 256],
-    themeColor: "#000000",
-    backgroundColor: "#ffffff",
+    themeColor: "#262626",
+    backgroundColor: "#fefefe",
   });
 
   const {
