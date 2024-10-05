@@ -27,9 +27,9 @@ export const metadata: Metadata = {
       type: "image/x-icon",
     },
     {
-      url: "/favicon.ico",
-      rel: "shortcut icon",
-      type: "image/x-icon",
+      url: '/favicon.ico',
+      rel: 'shortcut icon',
+      type: 'image/x-icon'
     },
     {
       url: "/android-chrome-192x192.png",
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
       rel: "icon",
       type: "image/png",
       sizes: "32x32",
-    },
+    }
   ],
   other: {
     "msapplication-TileColor": "#262626",

@@ -1,6 +1,6 @@
 {
-  "name": "Your site name",
-  "short_name": "Site Name",
+  "name": "Handy Tools - For developers",
+  "short_name": "Handy Tools",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -20,10 +20,10 @@
     {
       "src": "/favicon.ico",
       "type": "image/x-icon",
-      "sizes": "16x16 32x32 64x64 128x128 256x256"
+      "sizes": "16x16 32x32 48x48 256x256"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#262626",
+  "background_color": "#262626",
   "display": "standalone"
 }

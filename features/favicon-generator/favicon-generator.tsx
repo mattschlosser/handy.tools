@@ -20,14 +20,14 @@ import { Instructions } from "./components/instructions";
 import { cn } from "@/lib/utils";
 import ColorPicker from "@/components/ui/color-picker";
 
-const faviconSizeOptions = [16, 32, 64, 128, 256, 512];
+const faviconSizeOptions = [16, 32, 48, 64, 128, 256, 512];
 
 export default function FaviconGenerator() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [options, setOptions] = useState<GenerateIconsOptions>({
-    faviconSizes: [16, 32, 64, 128, 256],
+    faviconSizes: [16, 32, 48, 256],
     themeColor: "#000000",
     backgroundColor: "#ffffff",
   });
