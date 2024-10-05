@@ -20,7 +20,7 @@ const jsx = (opts: CodeOptions) => `{/* Favicon in ICO format */}
 <meta name="msapplication-TileColor" content="${opts.backgroundColor}" />
 <meta name="msapplication-TileImage" content="/mstile-256x256.png" />
 
-{/* Theme Color * /}
+{/* Theme Color */}
 <meta name="theme-color" content="${opts.themeColor}" />
 
 {/* Web App Manifest */}
