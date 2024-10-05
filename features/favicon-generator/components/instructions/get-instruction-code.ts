@@ -5,16 +5,16 @@ const jsx = (opts: CodeOptions) => `{/* Favicon in ICO format */}
 <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
 
 {/* Android Chrome Icons */}
-<link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
-<link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="/icon-512x512.png" />
 
 {/* Apple Touch Icon */}
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-<link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" href="/apple-touch-icon.png" />
 
 {/* Standard PNG Favicon Sizes */}
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/icon-16x16.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="/icon-32x32.png" />
+<link rel="icon" type="image/png" sizes="48x48" href="/icon-48x48.png" />
 
 {/* Microsoft Tiles */}
 <meta name="msapplication-TileColor" content="${opts.backgroundColor}" />
@@ -32,16 +32,16 @@ const html = (opts: CodeOptions) => `<!-- Favicon in ICO format -->
 <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
   
 <!-- Android Chrome Icons -->
-<link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icon-512x512.png">
 
 <!-- Apple Touch Icon -->
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+<link rel="apple-touch-icon" type="image/png" href="/apple-touch-icon.png">
 
 <!-- Standard PNG Favicon Sizes -->
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icon-32x32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/icon-48x48.png">
 
 <!-- Microsoft Tiles -->
 <meta name="msapplication-TileColor" content="${opts.backgroundColor}">
@@ -73,13 +73,31 @@ export const metadata: Metadata = {
       type: 'image/x-icon'
     },
     {
-      url: "/android-chrome-192x192.png",
+      url: "/icon-16x16.png",
+      rel: "icon",
+      type: "image/png",
+      sizes: "16x16",
+    },
+    {
+      url: "/icon-32x32.png",
+      rel: "icon",
+      type: "image/png",
+      sizes: "32x32",
+    },
+        {
+      url: "/icon-48x48.png",
+      rel: "icon",
+      type: "image/png",
+      sizes: "48x48",
+    },
+    {
+      url: "/icon-192x192.png",
       rel: "icon",
       type: "image/png",
       sizes: "192x192",
     },
     {
-      url: "/android-chrome-512x512.png",
+      url: "/icon-512x512.png",
       rel: "icon",
       type: "image/png",
       sizes: "512x512",
@@ -87,25 +105,8 @@ export const metadata: Metadata = {
     {
       url: "/apple-touch-icon.png",
       rel: "apple-touch-icon",
-      sizes: "180x180",
-    },
-    {
-      url: "/apple-touch-icon-120x120.png",
-      rel: "apple-touch-icon",
-      sizes: "120x120",
-    },
-    {
-      url: "/favicon-16x16.png",
-      rel: "icon",
       type: "image/png",
-      sizes: "16x16",
     },
-    {
-      url: "/favicon-32x32.png",
-      rel: "icon",
-      type: "image/png",
-      sizes: "32x32",
-    }
   ],
   other: {
     "msapplication-TileColor": "${opts.backgroundColor}",

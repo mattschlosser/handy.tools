@@ -27,18 +27,36 @@ export const metadata: Metadata = {
       type: "image/x-icon",
     },
     {
-      url: '/favicon.ico',
-      rel: 'shortcut icon',
-      type: 'image/x-icon'
+      url: "/favicon.ico",
+      rel: "shortcut icon",
+      type: "image/x-icon",
     },
     {
-      url: "/android-chrome-192x192.png",
+      url: "/icon-16x16.png",
+      rel: "icon",
+      type: "image/png",
+      sizes: "16x16",
+    },
+    {
+      url: "/icon-32x32.png",
+      rel: "icon",
+      type: "image/png",
+      sizes: "32x32",
+    },
+    {
+      url: "/icon-48x48.png",
+      rel: "icon",
+      type: "image/png",
+      sizes: "48x48",
+    },
+    {
+      url: "/icon-192x192.png",
       rel: "icon",
       type: "image/png",
       sizes: "192x192",
     },
     {
-      url: "/android-chrome-512x512.png",
+      url: "/icon-512x512.png",
       rel: "icon",
       type: "image/png",
       sizes: "512x512",
@@ -46,25 +64,8 @@ export const metadata: Metadata = {
     {
       url: "/apple-touch-icon.png",
       rel: "apple-touch-icon",
-      sizes: "180x180",
-    },
-    {
-      url: "/apple-touch-icon-120x120.png",
-      rel: "apple-touch-icon",
-      sizes: "120x120",
-    },
-    {
-      url: "/favicon-16x16.png",
-      rel: "icon",
       type: "image/png",
-      sizes: "16x16",
     },
-    {
-      url: "/favicon-32x32.png",
-      rel: "icon",
-      type: "image/png",
-      sizes: "32x32",
-    }
   ],
   other: {
     "msapplication-TileColor": "#262626",

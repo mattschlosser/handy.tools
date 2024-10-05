@@ -156,20 +156,41 @@ class MetaVerifierService {
         },
         {
           attributes: {
-            rel: "icon",
-            type: "image/vnd.microsoft.icon",
+            rel: "shortcut icon",
             href: "/favicon.ico",
           },
         },
         {
           attributes: {
-            rel: "shortcut icon",
-            href: "/favicon.ico",
-          }
-        }
+            rel: "icon",
+            type: "image/png",
+            sizes: "48x48",
+          },
+        },
+        {
+          attributes: {
+            rel: "icon",
+            type: "image/png",
+            sizes: "96x96",
+          },
+        },
+        {
+          attributes: {
+            rel: "icon",
+            type: "image/png",
+            sizes: "128x128",
+          },
+        },
+        {
+          attributes: {
+            rel: "icon",
+            type: "image/png",
+            sizes: "256x256",
+          },
+        },
       ],
       description:
-        "The site favicon is crucial for brand recognition. It appears in browser tabs, bookmarks, and history, helping users quickly identify your site. Support for multiple formats ensures compatibility across different browsers and devices.",
+        "The Favicon is a small icon displayed in the browser tab and bookmarks. It should be a recognizable symbol or logo that represents your site and enhances brand recognition.",
     },
     {
       title: "Shortcut Icon",
@@ -224,47 +245,14 @@ class MetaVerifierService {
         "A 32x32 offers better quality on high-DPI displays and is useful for bookmarks and other UI elements where a slightly larger icon is beneficial. It provides a good balance between size and detail.",
     },
     {
-      title: "192x192 Android Chrome Icon",
-      tag: "link",
-      attributes: {
-        rel: "icon",
-        type: "image/png",
-        sizes: "192x192",
-      },
-      description:
-        "This larger icon is used by Android devices when a user adds your website to their home screen. It ensures your site's icon looks crisp and clear on high-resolution mobile displays, enhancing the mobile user experience.",
-    },
-    {
-      title: "512x512 Android Chrome Icon",
-      tag: "link",
-      attributes: {
-        rel: "icon",
-        type: "image/png",
-        sizes: "512x512",
-      },
-      description:
-        "The 512x512 icon serves as a master icon for Android devices. It's used to generate smaller icons as needed and ensures your site icon looks great on large, high-resolution displays or when used in Android's overview screen.",
-    },
-    {
-      title: "Apple Touch Icon 180x180",
+      title: "Apple Touch Icon",
       tag: "link",
       attributes: {
         rel: "apple-touch-icon",
-        sizes: "180x180",
         href: "/apple-touch-icon.png",
       },
       description:
         "The Apple Touch Icon is used when iOS users add your website to their home screen. It ensures your site has a high-quality, recognizable icon on Apple devices, improving the user experience for iOS users and maintaining brand consistency.",
-    },
-    {
-      title: "(Optional) Apple Touch Icon 120x120",
-      tag: "link",
-      attributes: {
-        rel: "apple-touch-icon",
-        sizes: "120x120",
-      },
-      description:
-        "An additional Apple Touch Icon at 120x120 pixels ensures optimal display on devices with different screen resolutions, providing a sharper and more consistent appearance across all Apple devices.",
     },
     {
       title: "Microsoft Tile Image",
@@ -392,6 +380,12 @@ class MetaVerifierService {
         if (mimeError) {
           metaTagResult.errors.push(mimeError);
         }
+        if (tag === "link" && match.attributes.rel === "icon") {
+          const iconError = await this.validateIcon(`${baseUrl}${match.attributes.href}`);
+          if (iconError) {
+            metaTagResult.errors.push(iconError);
+          }
+        }
       }
     }
 
@@ -454,6 +448,21 @@ class MetaVerifierService {
     } catch {
       return metaValue.toLowerCase().endsWith(value.toLowerCase());
     }
+  }
+
+  private async validateIcon(
+    href: string,
+  ): Promise<string | null> {
+    const mimeType = await fetchContentHeaders(href);
+    if (!mimeType) {
+      return `Unable to verify MIME type for icon.`;
+    } else if (
+      !mimeType.startsWith("image/") &&
+      !mimeType.startsWith("application/")
+    ) {
+      return `Incorrect MIME type for icon. Expected an image, got "${mimeType}"`;
+    }
+    return null;
   }
 
   private async validateMimeType(

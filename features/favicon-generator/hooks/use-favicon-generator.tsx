@@ -68,23 +68,15 @@ export function useFaviconGenerator() {
       const config = [
         {
           size: 16,
-          name: "favicon-16x16.png",
+          name: "icon-16x16.png",
         },
         {
           size: 32,
-          name: "favicon-32x32.png",
+          name: "icon-32x32.png",
         },
         {
           size: 48,
-          name: "favicon-48x48.png",
-        },
-        {
-          size: 64,
-          name: "favicon-64x64.png",
-        },
-        {
-          size: 120,
-          name: "apple-touch-icon-120x120.png",
+          name: "icon-48x48.png",
         },
         {
           size: 256,
@@ -96,11 +88,11 @@ export function useFaviconGenerator() {
         },
         {
           size: 192,
-          name: "android-chrome-192x192.png",
+          name: "icon-192x192.png",
         },
         {
           size: 512,
-          name: "android-chrome-512x512.png",
+          name: "icon-512x512.png",
         },
       ];
 
@@ -154,30 +146,20 @@ export function useFaviconGenerator() {
     shortName: string,
     options: GenerateIconsOptions
   ): Blob => {
-    const { faviconSizes, themeColor, backgroundColor } = options;
+    const { themeColor, backgroundColor } = options;
     const manifest = {
       name,
       short_name: shortName,
       icons: [
         {
-          src: "/android-chrome-192x192.png",
+          src: "/icon-192x192.png",
           type: "image/png",
           sizes: "192x192",
         },
         {
-          src: "/android-chrome-512x512.png",
+          src: "/icon-512x512.png",
           type: "image/png",
           sizes: "512x512",
-        },
-        {
-          src: "/apple-touch-icon.png",
-          type: "image/png",
-          sizes: "180x180",
-        },
-        {
-          src: "/favicon.ico",
-          type: "image/x-icon",
-          sizes: faviconSizes.map((size) => `${size}x${size}`).join(" "),
         },
       ],
       theme_color: themeColor,

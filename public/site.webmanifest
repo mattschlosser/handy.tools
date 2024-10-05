@@ -3,12 +3,12 @@
   "short_name": "Handy Tools",
   "icons": [
     {
-      "src": "/android-chrome-192x192.png",
+      "src": "/icon-192x192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/android-chrome-512x512.png",
+      "src": "/icon-512x512.png",
       "type": "image/png",
       "sizes": "512x512"
     },
@@ -16,11 +16,6 @@
       "src": "/apple-touch-icon.png",
       "type": "image/png",
       "sizes": "180x180"
-    },
-    {
-      "src": "/favicon.ico",
-      "type": "image/x-icon",
-      "sizes": "16x16 32x32 48x48 256x256"
     }
   ],
   "theme_color": "#262626",
