@@ -7,6 +7,8 @@ import { useReducer, useEffect, useRef } from "react";
 
 export type GenerateIconsOptions = {
   faviconSizes: number[];
+  themeColor: string;
+  backgroundColor: string;
 };
 interface MagickState {
   isReady: boolean;
@@ -81,6 +83,14 @@ export function useFaviconGenerator() {
           name: "favicon-64x64.png",
         },
         {
+          size: 120,
+          name: "apple-touch-icon-120x120.png",
+        },
+        {
+          size: 256,
+          name: "mstile-256x256.png",
+        },
+        {
           size: 180,
           name: "apple-touch-icon.png",
         },
@@ -94,7 +104,11 @@ export function useFaviconGenerator() {
         },
       ];
 
-      const manifestBlob = createWebManifestBlob("Your site name", "Site Name");
+      const manifestBlob = createWebManifestBlob(
+        "Your site name",
+        "Site Name",
+        options
+      );
       const favicon = await magickServiceRef.current.generateFavicon(
         file,
         faviconSizes
@@ -135,7 +149,12 @@ export function useFaviconGenerator() {
     }
   };
 
-  const createWebManifestBlob = (name: string, shortName: string): Blob => {
+  const createWebManifestBlob = (
+    name: string,
+    shortName: string,
+    options: GenerateIconsOptions
+  ): Blob => {
+    const { faviconSizes, themeColor, backgroundColor } = options;
     const manifest = {
       name,
       short_name: shortName,
@@ -158,11 +177,11 @@ export function useFaviconGenerator() {
         {
           src: "/favicon.ico",
           type: "image/x-icon",
-          sizes: "48x48 72x72 96x96 128x128 256x256",
+          sizes: faviconSizes.map((size) => `${size}x${size}`).join(" "),
         },
       ],
-      theme_color: "#ffffff",
-      background_color: "#ffffff",
+      theme_color: themeColor,
+      background_color: backgroundColor,
       display: "standalone",
     };
 

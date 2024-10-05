@@ -28,6 +28,10 @@
       --accent-foreground: 0 0% 9%;
       --destructive: 0 84.2% 60.2%;
       --destructive-foreground: 0 0% 98%;
+      --warning: 45 100% 50%;
+      --warning-foreground: 0 0% 98%;
+      --success: 120 80% 40%;
+      --success-foreground: 0 0% 98%;
       --ring: 0 72.2% 50.6%;
       --radius: 0.8rem;
     }
@@ -51,6 +55,10 @@
       --accent-foreground: 0 0% 98%;
       --destructive: 0 62.8% 30.6%;
       --destructive-foreground: 0 0% 98%;
+      --warning: 45 100% 50%;
+      --warning-foreground: 0 0% 98%;
+      --success: 120 80% 40%;
+      --success-foreground: 0 0% 98%;
       --ring: 0 72.2% 50.6%;
     }
   }

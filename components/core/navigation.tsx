@@ -4,25 +4,35 @@ import Link from "next/link";
 import { ModeToggle } from "../ui/mode-toggle";
 import { KeyboardMusic, Pause, PocketKnifeIcon } from "lucide-react";
 import { Button } from "../ui/button";
-// import {
-//   NavigationMenu,
-//   NavigationMenuContent,
-//   NavigationMenuItem,
-//   NavigationMenuLink,
-//   NavigationMenuList,
-//   NavigationMenuTrigger,
-//   navigationMenuTriggerStyle,
-// } from "@/components/ui/navigation-menu";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 
-// const components: { title: string; href: string; description: string }[] = [
-//   {
-//     title: "Video Compressor",
-//     href: "/",
-//     description:
-//       "Compress your videos with minimal loss in quality using ffmpeg.",
-//   },
-// ];
+const components: { title: string; href: string; description: string }[] = [
+  {
+    title: "Video Compressor",
+    href: "/",
+    description:
+      "Compress your videos with minimal loss in quality using ffmpeg.",
+  },
+  {
+    title: "Favicon Generator",
+    href: "/favicon-generator",
+    description: "Generate favicons for your website with ease.",
+  },
+  {
+    title: "Meta Tags Verifier",
+    href: "/meta-verifier",
+    description: "Verify meta tags of any website.",
+  }
+];
 
 export function Navigation() {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -50,10 +60,10 @@ export function Navigation() {
           <div className="text-2xl">Handy Tools</div>
         </Link>
       </nav>
-      {/* <NavigationMenu>
+      <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem>
-            <NavigationMenuTrigger>Tools</NavigationMenuTrigger>
+            <NavigationMenuTrigger>Toolkit</NavigationMenuTrigger>
             <NavigationMenuContent>
               <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                 {components.map((component) => (
@@ -68,15 +78,15 @@ export function Navigation() {
               </ul>
             </NavigationMenuContent>
           </NavigationMenuItem>
-          <NavigationMenuItem>
+          {/* <NavigationMenuItem>
             <Link href="/about" legacyBehavior passHref>
               <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                 About
               </NavigationMenuLink>
             </Link>
-          </NavigationMenuItem>
+          </NavigationMenuItem> */}
         </NavigationMenuList>
-      </NavigationMenu> */}
+      </NavigationMenu>
 
       <div className="ml-auto flex gap-2">
         <Button variant="outline" size="icon" onClick={toggleAudio}>

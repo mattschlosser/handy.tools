@@ -17,8 +17,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { downloadFile } from "@/lib/download-file";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Instructions } from "./components/instructions";
-import { MetaIconVerifier } from "./components/meta-icon-verifier";
 import { cn } from "@/lib/utils";
+import ColorPicker from "@/components/ui/color-picker";
 
 const faviconSizeOptions = [16, 32, 64, 128, 256, 512];
 
@@ -28,6 +28,8 @@ export default function FaviconGenerator() {
   const [files, setFiles] = useState<File[]>([]);
   const [options, setOptions] = useState<GenerateIconsOptions>({
     faviconSizes: [16, 32, 64, 128, 256],
+    themeColor: "#000000",
+    backgroundColor: "#ffffff",
   });
 
   const {
@@ -65,7 +67,7 @@ export default function FaviconGenerator() {
 
   return (
     <div className="grow flex flex-col gap-4 h-full w-full md:overflow-hidden">
-      <h1 className="text-2xl font-bold">Site Meta Generator</h1>
+      <h1 className="text-2xl font-bold">Favicon Generator</h1>
       <div className="grow grid items-start md:grid-cols-3 gap-4 w-full h-full mx-auto md:overflow-hidden">
         <div
           className={cn(
@@ -76,7 +78,7 @@ export default function FaviconGenerator() {
           <div className="relative flex w-full items-center justify-center h-full md:overflow-hidden">
             {isGenerated && (
               <div className="w-full h-full">
-                <Instructions />
+                <Instructions options={options} />
               </div>
             )}
             {!isGenerated && files.length === 0 && isFaviconGeneratorReady && (
@@ -131,6 +133,30 @@ export default function FaviconGenerator() {
             <div className="flex flex-col gap-2 border bg-card p-4 rounded-md">
               <h2 className="text-xl font-semibold">Settings</h2>
               <div className="flex flex-col gap-2">
+                <h3 className="text-base font-bold">Theme Color</h3>
+                <ColorPicker
+                  value={options.themeColor}
+                  onChange={(color) =>
+                    setOptions((prevOptions) => ({
+                      ...prevOptions,
+                      themeColor: color,
+                    }))
+                  }
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <h3 className="text-base font-bold">Background Color</h3>
+                <ColorPicker
+                  value={options.backgroundColor}
+                  onChange={(color) =>
+                    setOptions((prevOptions) => ({
+                      ...prevOptions,
+                      backgroundColor: color,
+                    }))
+                  }
+                />
+              </div>
+              <div className="flex flex-col gap-2">
                 <h3 className="text-base font-bold">Favicon sizes</h3>
                 {faviconSizeOptions.map((size) => (
                   <div key={size} className="flex items-center space-x-2">
@@ -138,9 +164,7 @@ export default function FaviconGenerator() {
                       id={`faviconSize-${size}`}
                       disabled={isDisabled}
                       checked={options.faviconSizes.includes(size)}
-                      onCheckedChange={(checked) =>
-                        handleFaviconSizesChange(size)
-                      }
+                      onCheckedChange={() => handleFaviconSizesChange(size)}
                     />
                     <label
                       htmlFor={`faviconSize-${size}`}

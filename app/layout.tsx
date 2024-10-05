@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Lexend } from "next/font/google";
 import localFont from "next/font/local";
 import { Navigation } from "@/components/core/navigation";
@@ -19,10 +19,16 @@ const monoFont = localFont({
 export const metadata: Metadata = {
   title: "Handy Tools",
   description: "Tools for developers",
+  manifest: "/site.webmanifest",
   icons: [
     {
       url: "/favicon.ico",
       rel: "icon",
+      type: "image/x-icon",
+    },
+    {
+      url: "/favicon.ico",
+      rel: "shortcut icon",
       type: "image/x-icon",
     },
     {
@@ -43,6 +49,11 @@ export const metadata: Metadata = {
       sizes: "180x180",
     },
     {
+      url: "/apple-touch-icon-120x120.png",
+      rel: "apple-touch-icon",
+      sizes: "120x120",
+    },
+    {
       url: "/favicon-16x16.png",
       rel: "icon",
       type: "image/png",
@@ -54,11 +65,11 @@ export const metadata: Metadata = {
       type: "image/png",
       sizes: "32x32",
     },
-    {
-      url: "/site.webmanifest",
-      rel: "manifest",
-    },
   ],
+  other: {
+    "msapplication-TileColor": "#262626",
+    "msapplication-TileImage": "/mstile-256x256.png",
+  },
   openGraph: {
     images: [
       {
@@ -69,6 +80,10 @@ export const metadata: Metadata = {
       },
     ],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#262626",
 };
 
 export default function RootLayout({

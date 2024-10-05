@@ -1,11 +1,20 @@
 import { CodeHighlight } from "@/components/ui/code-highlight";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { generateNextJsCode } from "./generate-nextjs-code";
-import { generateJsxCode } from "./generate-jsx-code";
-import { generateHtmlCode } from "./generate-html-code";
 import { Button } from "@/components/ui/button";
+import { getInstructionCode } from "./get-instruction-code";
+import Link from "next/link";
 
-export function Instructions() {
+export type CodeOptions = {
+  themeColor: string;
+  backgroundColor: string;
+};
+
+type InstructionsProps = {
+  options: CodeOptions;
+};
+
+export function Instructions(props: InstructionsProps) {
+  const { options } = props;
   return (
     <div className="w-full h-full flex flex-col gap-2">
       <Tabs className="w-full h-full grow overflow-y-auto" defaultValue="html">
@@ -21,7 +30,7 @@ export function Instructions() {
           </p>
           <CodeHighlight
             language="markup"
-            code={generateHtmlCode()}
+            code={getInstructionCode("html", options)}
             className="w-full"
           />
         </TabsContent>
@@ -30,7 +39,7 @@ export function Instructions() {
             Copy the following code and paste it in your HTML {`<head>`} tag.
           </p>
           <CodeHighlight
-            code={generateJsxCode()}
+            code={getInstructionCode("jsx", options)}
             language="jsx"
             className="w-full"
           />
@@ -39,7 +48,10 @@ export function Instructions() {
           <p className="p-2 text-base">
             Copy the following code and paste it in your _layout meta config.
           </p>
-          <CodeHighlight code={generateNextJsCode()} className="w-full" />
+          <CodeHighlight
+            code={getInstructionCode("nextjs", options)}
+            className="w-full"
+          />
         </TabsContent>
       </Tabs>
       <div className="p-2 w-full mt-auto flex items-center justify-between gap-2 border bg-background rounded-md">
@@ -47,7 +59,9 @@ export function Instructions() {
           Done? Use the meta verification tool to verify that everything is in
           place.
         </p>
-        <Button>Verify Meta</Button>
+        <Link href="/meta-verifier">
+          <Button>Verify Meta</Button>
+        </Link>
       </div>
     </div>
   );

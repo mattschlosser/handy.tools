@@ -1,6 +1,6 @@
 "use server";
 
-const fetchFaviconHeaders = async (
+const fetchContentHeaders = async (
   faviconUrl: string
 ): Promise<string | undefined | null> => {
   try {
@@ -12,4 +12,4 @@ const fetchFaviconHeaders = async (
   }
 };
 
-export default fetchFaviconHeaders;
+export default fetchContentHeaders;
