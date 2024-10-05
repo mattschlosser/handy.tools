@@ -142,13 +142,23 @@ export function useFaviconGenerator() {
       icons: [
         {
           src: "/android-chrome-192x192.png",
-          sizes: "192x192",
           type: "image/png",
+          sizes: "192x192",
         },
         {
           src: "/android-chrome-512x512.png",
-          sizes: "512x512",
           type: "image/png",
+          sizes: "512x512",
+        },
+        {
+          src: "/apple-touch-icon.png",
+          type: "image/png",
+          sizes: "180x180",
+        },
+        {
+          src: "/favicon.ico",
+          type: "image/x-icon",
+          sizes: "48x48 72x72 96x96 128x128 256x256",
         },
       ],
       theme_color: "#ffffff",

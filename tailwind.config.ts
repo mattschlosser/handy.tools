@@ -11,7 +11,8 @@ const config: Config = {
   theme: {
   	extend: {
 			fontFamily: {
-				sans: ['var(--font-sans)']
+				sans: ['var(--font-sans)'],
+				mono: ['var(--font-mono)'],
 			},
 			fontSize: {
 				xxs: ['0.625rem', '1.1'],

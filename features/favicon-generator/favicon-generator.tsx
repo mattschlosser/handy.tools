@@ -16,6 +16,9 @@ import { TrashIcon } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { downloadFile } from "@/lib/download-file";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Instructions } from "./components/instructions";
+import { MetaIconVerifier } from "./components/meta-icon-verifier";
+import { cn } from "@/lib/utils";
 
 const faviconSizeOptions = [16, 32, 64, 128, 256, 512];
 
@@ -61,11 +64,21 @@ export default function FaviconGenerator() {
   const isDisabled = isGenerating || isFaviconGeneratorLoading;
 
   return (
-    <div className="grow flex flex-col gap-4 h-full w-full">
-      <h1 className="text-2xl font-bold">The FavIcon generator</h1>
-      <div className="grow grid items-start md:grid-cols-3 gap-4 w-full h-full mx-auto">
-        <div className="flex flex-col gap-2 md:col-span-2 border p-2 rounded-md bg-card h-full min-h-[300px]">
-          <div className="relative flex items-center justify-center h-full">
+    <div className="grow flex flex-col gap-4 h-full w-full md:overflow-hidden">
+      <h1 className="text-2xl font-bold">Site Meta Generator</h1>
+      <div className="grow grid items-start md:grid-cols-3 gap-4 w-full h-full mx-auto md:overflow-hidden">
+        <div
+          className={cn(
+            "flex flex-col gap-2 md:col-span-2 border p-2 rounded-md bg-card h-full min-h-[300px] overflow-x-auto transition-all duration-200",
+            isGenerated && "md:col-span-3"
+          )}
+        >
+          <div className="relative flex w-full items-center justify-center h-full md:overflow-hidden">
+            {isGenerated && (
+              <div className="w-full h-full">
+                <Instructions />
+              </div>
+            )}
             {!isGenerated && files.length === 0 && isFaviconGeneratorReady && (
               <Dropzone
                 containerClassName="w-full h-full"
@@ -86,7 +99,7 @@ export default function FaviconGenerator() {
               <Spinner className="absolute inset-0 m-auto w-12 h-12" />
             )}
             {!isGenerated && files.length > 0 && (
-              <div className="relative w-full h-full flex bg-black rounded-md overflow-hidden">
+              <div className="relative w-full h-full flex bg-black rounded-md md:overflow-hidden">
                 <Image
                   src={URL.createObjectURL(files[0])}
                   alt="Uploaded file"
@@ -113,56 +126,59 @@ export default function FaviconGenerator() {
             </Alert>
           )}
         </div>
-        <aside className="flex flex-col col-span-1 gap-4 h-full">
-          <div className="flex flex-col gap-2 border bg-card p-4 rounded-md">
-            <h2 className="text-xl font-semibold">Settings</h2>
-            <div className="flex flex-col gap-2">
-              <h3 className="text-base font-bold">Favicon sizes</h3>
-              {faviconSizeOptions.map((size) => (
-                <div key={size} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`faviconSize-${size}`}
-                    disabled={isDisabled}
-                    checked={options.faviconSizes.includes(size)}
-                    onCheckedChange={(checked) =>
-                      handleFaviconSizesChange(size)
-                    }
-                  />
-                  <label
-                    htmlFor={`faviconSize-${size}`}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {size}x{size}px
-                  </label>
-                </div>
-              ))}
-              <p className="text-sm text-gray-500">
-                The selected sizes will be embedded into the generated .ico file
-              </p>
+        {!isGenerated && (
+          <aside className="flex flex-col col-span-1 gap-4 h-full">
+            <div className="flex flex-col gap-2 border bg-card p-4 rounded-md">
+              <h2 className="text-xl font-semibold">Settings</h2>
+              <div className="flex flex-col gap-2">
+                <h3 className="text-base font-bold">Favicon sizes</h3>
+                {faviconSizeOptions.map((size) => (
+                  <div key={size} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`faviconSize-${size}`}
+                      disabled={isDisabled}
+                      checked={options.faviconSizes.includes(size)}
+                      onCheckedChange={(checked) =>
+                        handleFaviconSizesChange(size)
+                      }
+                    />
+                    <label
+                      htmlFor={`faviconSize-${size}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {size}x{size}px
+                    </label>
+                  </div>
+                ))}
+                <p className="text-sm text-gray-500">
+                  The selected sizes will be embedded into the generated .ico
+                  file
+                </p>
+              </div>
             </div>
-          </div>
-          <AnimatePresence>
-            {files && files.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-col gap-2 mt-auto border bg-card p-4 rounded-md"
-              >
-                <Button
-                  className="flex-1"
-                  onClick={handleGenerateFavicon}
-                  disabled={isDisabled || files.length === 0}
+            <AnimatePresence>
+              {files && files.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col gap-2 mt-auto border bg-card p-4 rounded-md"
                 >
-                  {isGenerating && (
-                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  {isGenerating ? "Working on it..." : "Generate"}
-                </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </aside>
+                  <Button
+                    className="flex-1"
+                    onClick={handleGenerateFavicon}
+                    disabled={isDisabled || files.length === 0}
+                  >
+                    {isGenerating && (
+                      <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    {isGenerating ? "Working on it..." : "Generate"}
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </aside>
+        )}
         {showConfetti && (
           <Confetti
             numberOfPieces={1000}

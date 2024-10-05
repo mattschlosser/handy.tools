@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Lexend } from "next/font/google";
+import localFont from "next/font/local";
 import { Navigation } from "@/components/core/navigation";
 import ThemeProvider from "@/components/theme-provider";
 
@@ -8,6 +9,11 @@ import "./globals.css";
 const sansFont = Lexend({
   variable: "--font-sans",
   subsets: ["latin"],
+});
+
+const monoFont = localFont({
+  variable: "--font-mono",
+  src: "/fonts/CascadiaCode.woff2",
 });
 
 export const metadata: Metadata = {
@@ -76,7 +82,9 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
     >
-      <body className={`${sansFont.variable} antialiased grow flex flex-col`}>
+      <body
+        className={`${sansFont.variable} ${monoFont.variable} antialiased grow flex flex-col`}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
