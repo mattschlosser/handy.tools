@@ -100,7 +100,7 @@ export function ffmpegReducer(
   }
 }
 
-const DEFAULT_BASE_URL = "https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd";
+// const DEFAULT_BASE_URL = "https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd";
 
 export const useFfmpeg = () => {
   const [state, dispatch] = useReducer(ffmpegReducer, {
@@ -116,13 +116,12 @@ export const useFfmpeg = () => {
   const ffmpegServiceRef = useRef<null | FFmpegService>(null);
 
   const load = useCallback(
-    async (customBaseURL?: string) => {
+    async () => {
       if (!ffmpegServiceRef.current) return;
       const ffmpegService = ffmpegServiceRef.current;
-      const baseURL = customBaseURL || DEFAULT_BASE_URL;
       dispatch({ type: "LOAD_START" });
       try {
-        await ffmpegService.load(baseURL);
+        await ffmpegService.load();
         dispatch({ type: "LOAD_SUCCESS" });
 
         ffmpegService.ffmpeg.on("progress", (progress) => {
@@ -242,7 +241,7 @@ export const useFfmpeg = () => {
     }
 
     if (!state.isLoaded && !state.isLoading) {
-      void load(""); // use local ffmpeg
+      void load();
     }
   }, [load, state.isLoaded, state.isLoading, ffmpegServiceRef]);
 

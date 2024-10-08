@@ -64,7 +64,7 @@ export class FFmpegService {
     this.ffmpeg = new FFmpeg();
   }
 
-  async load(baseURL: string): Promise<void> {
+  async load(baseURL = ''): Promise<void> {
     await this.ffmpeg.load({
       coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
       wasmURL: await toBlobURL(
