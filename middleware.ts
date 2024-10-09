@@ -12,7 +12,6 @@ export async function middleware(request: NextRequest) {
   // check if the request is a server action and apply the rate limiting then
   if (typeof request.headers.get("Next-Action") === "string") {
     const ip = request.ip ?? "121.0.0.1";
-    console.log("🚀 ~ middleware ~ ip:", ip)
     const { success } = await ratelimit.limit(ip);
     if (!success) {
       return new Response("Rate limited", { status: 429 });
