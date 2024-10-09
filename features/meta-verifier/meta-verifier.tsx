@@ -9,6 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { Spinner } from "@/components/ui/spinner";
 import { VerificationResult } from "./components/verification-result";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function MetaVerifier() {
   const [showConfetti, setShowConfetti] = useState(false);
@@ -16,12 +17,9 @@ export default function MetaVerifier() {
 
   const handleVerify = async (url: string) => {
     const result = await verifyMeta(url);
-    console.log("🚀 ~ handleVerify ~ result:", result);
-
     const isSuccessful = result?.metaTags?.every(
       (tag) => tag.errors.length === 0
     );
-    console.log("🚀 ~ handleVerify ~ isSuccessful:", isSuccessful);
 
     if (isSuccessful) {
       setShowConfetti(true);
@@ -48,15 +46,23 @@ export default function MetaVerifier() {
                 <div className="flex flex-col gap-4">
                   <div className="text-lg font-semibold">Meta Tags</div>
                   <div className="flex flex-col gap-3">
-                    {result.metaTags.map((tag) => (
-                      <VerificationResult
-                        key={tag.title}
-                        title={tag.title}
-                        description={tag.description}
-                        errors={tag.errors}
-                        successes={tag.successes}
-                      />
-                    ))}
+                    <AnimatePresence>
+                      {result.metaTags.map((tag, i) => (
+                        <motion.div
+                          initial={{ opacity: 0, transform: "translateY(10%)" }}
+                          animate={{ opacity: 1, transform: "translateY(0%)" }}
+                          exit={{ opacity: 0, transform: "translateY(10%)" }}
+                          key={tag.title + i}
+                        >
+                          <VerificationResult
+                            title={tag.title}
+                            description={tag.description}
+                            errors={tag.errors}
+                            successes={tag.successes}
+                          />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </div>
                 </div>
                 {result.manifest && result.manifest?.length > 0 && (

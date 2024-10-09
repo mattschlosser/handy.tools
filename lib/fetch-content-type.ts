@@ -8,7 +8,13 @@ const fetchContentHeaders = async (
     const headers = response.headers.get("content-type");
     return headers;
   } catch (error) {
-    return undefined;
+    console.error("Error", error);
+    if (error instanceof Error) {
+      throw new Error(
+        "Unable to fetch the URL. Please ensure the URL is correct and accessible."
+      );
+    }
+    throw new Error("Unable to fetch the URL. Please try again later.");
   }
 };
 

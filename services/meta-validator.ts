@@ -409,6 +409,21 @@ class MetaValidatorService {
           return result;
         },
       },
+      {
+        title: "Web App Manifest",
+        description: "Checks if the page has a web app manifest",
+        check: async (data: MetaTag[]) => {
+          if (
+            data.some(
+              (tag) => tag.tag === "link" && tag.attributes.rel === "manifest"
+            )
+          ) {
+            return { errors: [], successes: ["Web App Manifest is present"] };
+          } else {
+            return { errors: ["Web App Manifest is missing"], successes: [] };
+          }
+        },
+      },
     ];
 
     this.manifestRules = [
@@ -546,19 +561,33 @@ class MetaValidatorService {
     html: string,
     baseUrl: string
   ): Promise<RuleValidationResult[]> {
-    const $ = cheerio.load(html);
-    const foundMetaTags: MetaTag[] = [];
+    try {
+      const $ = cheerio.load(html);
 
-    $("meta, title, link, html").each((_, elem) => {
-      const tag = elem.tagName.toLowerCase();
-      const attributes: { [key: string]: string } = {};
-      Object.entries(elem.attribs).forEach(([key, value]) => {
-        attributes[key] = value;
+      const foundMetaTags: MetaTag[] = [];
+
+      $("meta, title, link, html").each((_, elem) => {
+        const tag = elem.tagName.toLowerCase();
+        const attributes: { [key: string]: string } = {};
+        Object.entries(elem.attribs).forEach(([key, value]) => {
+          attributes[key] = value;
+        });
+        foundMetaTags.push({ tag, attributes });
       });
-      foundMetaTags.push({ tag, attributes });
-    });
 
-    return await this.runValidation(this.metaTagRules, foundMetaTags, baseUrl);
+      return await this.runValidation(
+        this.metaTagRules,
+        foundMetaTags,
+        baseUrl
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(
+          "Failed to load site. Are you spamming this?" // TODO: Better rate limit handling
+        );
+      }
+      throw error;
+    }
   }
 
   private async verifyManifest(
