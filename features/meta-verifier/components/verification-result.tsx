@@ -1,42 +1,55 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
-import { CircleAlertIcon, CircleCheckIcon, CircleXIcon } from "lucide-react";
+import { CircleCheckIcon, CircleXIcon } from "lucide-react";
 
 interface VerificationResultProps {
   title: string;
-  found: boolean;
   description: string;
-  errors: string[] | null;
+  errors?: string[];
+  successes?: string[];
   className?: string;
 }
 
 export function VerificationResult(props: VerificationResultProps) {
-  const { title, found, description, errors, className } = props;
-  const isSuccess = found && !errors?.length;
-  const isWarning = found && errors && errors?.length > 0;
-  const isNotFound = !found;
+  const { title, description, errors = [], successes = [], className } = props;
+  const isSuccess = errors?.length === 0;
+  const isError = errors?.length > 0 && successes?.length === 0;
+
+  const messages = [
+    ...(successes || []).map((m) => ({
+      message: m,
+      type: "success",
+    })),
+    ...(errors || []).map((m) => ({
+      message: m,
+      type: "error",
+    })),
+  ].sort((a) => (a.type === "success" ? -1 : 1));
 
   return (
     <Alert
-      variant={isSuccess ? "success" : isWarning ? "warning" : "destructive"}
+      variant={isSuccess ? "success" : isError ? "destructive" : "warning"}
       className={cn(className)}
     >
-      {isSuccess && <CircleCheckIcon className="h-5 w-5" />}
-      {isWarning && <CircleAlertIcon className="h-5 w-5" />}
-      {isNotFound && <CircleXIcon className="h-5 w-5" />}
-
-      <AlertTitle>{title}</AlertTitle>
+      <AlertTitle className="text-base font-bold mb-0">{title}</AlertTitle>
       <AlertDescription className="flex flex-col gap-2">
-        <p className="text-xs">{description}</p>
-        {isWarning && (
-          <div className="flex flex-col">
-            <p className="text-sm font-semibold">Issues:</p>
-            <ul className="list-disc pl-4">
-              {errors.map((error) => (
-                <li key={error}>{error}</li>
-              ))}
-            </ul>
-          </div>
+        <p className="text-sm">{description}</p>
+        {messages.length > 0 && (
+          <ul className="flex flex-col gap-1">
+            {messages.map((m, i) => (
+              <li key={i} className="text-xs">
+                <div className="flex gap-1.5">
+                  {m.type === "error" && (
+                    <CircleXIcon className="h-4 w-4 text-destructive" />
+                  )}
+                  {m.type === "success" && (
+                    <CircleCheckIcon className="h-4 w-4 text-success" />
+                  )}
+                  {m.message}
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </AlertDescription>
     </Alert>

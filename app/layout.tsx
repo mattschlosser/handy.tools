@@ -32,34 +32,10 @@ export const metadata: Metadata = {
       type: "image/x-icon",
     },
     {
-      url: "/icon-16x16.png",
-      rel: "icon",
-      type: "image/png",
-      sizes: "16x16",
-    },
-    {
-      url: "/icon-32x32.png",
-      rel: "icon",
-      type: "image/png",
-      sizes: "32x32",
-    },
-    {
       url: "/icon-48x48.png",
       rel: "icon",
       type: "image/png",
       sizes: "48x48",
-    },
-    {
-      url: "/icon-192x192.png",
-      rel: "icon",
-      type: "image/png",
-      sizes: "192x192",
-    },
-    {
-      url: "/icon-512x512.png",
-      rel: "icon",
-      type: "image/png",
-      sizes: "512x512",
     },
     {
       url: "/apple-touch-icon.png",

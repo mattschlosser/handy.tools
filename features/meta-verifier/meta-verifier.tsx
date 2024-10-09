@@ -16,7 +16,14 @@ export default function MetaVerifier() {
 
   const handleVerify = async (url: string) => {
     const result = await verifyMeta(url);
-    if (result?.success) {
+    console.log("🚀 ~ handleVerify ~ result:", result);
+
+    const isSuccessful = result?.metaTags?.every(
+      (tag) => tag.errors.length === 0
+    );
+    console.log("🚀 ~ handleVerify ~ isSuccessful:", isSuccessful);
+
+    if (isSuccessful) {
       setShowConfetti(true);
     }
   };
@@ -37,19 +44,37 @@ export default function MetaVerifier() {
               <Spinner className="absolute inset-0 m-auto w-12 h-12" />
             )}
             {!isVerifying && result && (
-              <div className="flex flex-col gap-4 p-2">
-                <div className="text-lg font-semibold">Results</div>
-                <div className="flex flex-col gap-3">
-                  {result.metaTags.map((tag) => (
-                    <VerificationResult
-                      key={tag.title}
-                      title={tag.title}
-                      found={tag.found}
-                      description={tag.description}
-                      errors={tag.errors}
-                    />
-                  ))}
+              <div className="flex flex-col gap-6 p-2">
+                <div className="flex flex-col gap-4">
+                  <div className="text-lg font-semibold">Meta Tags</div>
+                  <div className="flex flex-col gap-3">
+                    {result.metaTags.map((tag) => (
+                      <VerificationResult
+                        key={tag.title}
+                        title={tag.title}
+                        description={tag.description}
+                        errors={tag.errors}
+                        successes={tag.successes}
+                      />
+                    ))}
+                  </div>
                 </div>
+                {result.manifest && result.manifest?.length > 0 && (
+                  <div className="flex flex-col gap-4">
+                    <div className="text-lg font-semibold">Web Manifest</div>
+                    <div className="flex flex-col gap-3">
+                      {result.manifest.map((tag) => (
+                        <VerificationResult
+                          key={tag.title}
+                          title={tag.title}
+                          description={tag.description}
+                          errors={tag.errors}
+                          successes={tag.successes}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

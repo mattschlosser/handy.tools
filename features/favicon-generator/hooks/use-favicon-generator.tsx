@@ -67,14 +67,6 @@ export function useFaviconGenerator() {
 
       const config = [
         {
-          size: 16,
-          name: "icon-16x16.png",
-        },
-        {
-          size: 32,
-          name: "icon-32x32.png",
-        },
-        {
           size: 48,
           name: "icon-48x48.png",
         },

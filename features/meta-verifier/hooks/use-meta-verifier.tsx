@@ -1,18 +1,17 @@
-import fetchHtml from "@/lib/fetch-html";
-import MetaVerifierService, {
-  VerificationResult,
-} from "@/services/meta-verifier";
-import { useReducer, useCallback } from "react";
+import MetaValidatorService, {
+  ValidationResult,
+} from "@/services/meta-validator";
+import { useReducer, useCallback, useMemo } from "react";
 
 interface MetaVerifierState {
-  result: VerificationResult | null;
+  result: ValidationResult | null;
   isVerifying: boolean;
   error: { type: string; message: string } | null;
 }
 
 type MetaVerifierAction =
   | { type: "START_VERIFICATION" }
-  | { type: "VERIFICATION_SUCCESS", payload: VerificationResult }
+  | { type: "VERIFICATION_SUCCESS"; payload: ValidationResult }
   | {
       type: "VERIFICATION_ERROR";
       payload: { type: string; message: string } | null;
@@ -47,17 +46,17 @@ function metaVerifierReducer(
 
 export function useMetaVerifier() {
   const [state, dispatch] = useReducer(metaVerifierReducer, initialState);
-  const metaVerifierService = new MetaVerifierService();
+  const metaVerifierService = useMemo(() => new MetaValidatorService(), []);
 
   const verifyMeta = useCallback(
-    async (baseUrl: string): Promise<VerificationResult | undefined> => {
+    async (baseUrl: string): Promise<ValidationResult | undefined> => {
       dispatch({ type: "START_VERIFICATION" });
       try {
-        const html = await fetchHtml(baseUrl);
-        const result = await metaVerifierService.parseMeta(html, baseUrl);
+        const result = await metaVerifierService.verifyWebsite(baseUrl);
         dispatch({ type: "VERIFICATION_SUCCESS", payload: result });
         return result;
       } catch (error) {
+        console.error("Error verifying: ", error);
         if (error instanceof Error) {
           dispatch({
             type: "VERIFICATION_ERROR",
@@ -76,7 +75,7 @@ export function useMetaVerifier() {
           });
       }
     },
-    []
+    [metaVerifierService]
   );
 
   return {
