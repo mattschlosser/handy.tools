@@ -4,8 +4,8 @@ import { kv } from "@vercel/kv";
 
 const ratelimit = new Ratelimit({
   redis: kv,
-  // 10 requests from the same IP in 10 seconds
-  limiter: Ratelimit.slidingWindow(10, "10 s"),
+  // 50 requests from the same IP in 10 seconds
+  limiter: Ratelimit.slidingWindow(50, "10 s"),
 });
 
 export async function middleware(request: NextRequest) {
