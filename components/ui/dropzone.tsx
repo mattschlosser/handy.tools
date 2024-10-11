@@ -17,6 +17,7 @@ export interface DropzoneProps extends Omit<_DropzoneProps, "children"> {
   setFilesUploaded: React.Dispatch<React.SetStateAction<File[]>>;
   loading?: boolean;
   maxSize?: number;
+  instructions?: string;
 }
 
 const Upload = ({ className }: { className?: string }) => (
@@ -46,6 +47,7 @@ const Dropzone = ({
   disabled,
   maxSize,
   maxFiles,
+  instructions,
   ...props
 }: DropzoneProps) => {
   const dropzone = useDropzone({
@@ -89,6 +91,11 @@ const Dropzone = ({
             <div className="flex items-center flex-row gap-0.5 text-sm font-medium">
               <Upload className="mr-2 h-4 w-4" /> Drop your file here!
             </div>
+            {instructions && (
+              <div className="text-center text-xs text-gray-400 font-medium">
+                {instructions}
+              </div>
+            )}
             {maxSize && (
               <div className="text-xs text-gray-400 font-medium">
                 Max. file size: {(maxSize / (1024 * 1024)).toFixed(2)} MB

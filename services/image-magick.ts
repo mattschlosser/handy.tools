@@ -65,7 +65,6 @@ export class MagickService {
               });
               return;
             }
-
             image.clone((img) => {
               img.resize(sizes[index], sizes[index]);
               images.push(img);

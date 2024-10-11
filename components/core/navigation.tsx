@@ -2,7 +2,7 @@
 import React, { useRef, useState } from "react";
 import Link from "next/link";
 import { ModeToggle } from "../ui/mode-toggle";
-import { KeyboardMusic, Pause, PocketKnifeIcon } from "lucide-react";
+import { KeyboardMusic, Menu, Pause, PocketKnifeIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import {
   NavigationMenu,
@@ -11,9 +11,9 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
+import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 
 const components: { title: string; href: string; description: string }[] = [
   {
@@ -31,7 +31,7 @@ const components: { title: string; href: string; description: string }[] = [
     title: "Meta Tags Verifier",
     href: "/meta-verifier",
     description: "Verify meta tags of any website.",
-  }
+  },
 ];
 
 export function Navigation() {
@@ -57,10 +57,10 @@ export function Navigation() {
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
           <PocketKnifeIcon />
-          <div className="text-2xl">Handy Tools</div>
+          <div className="text-sm xs:text-xl md:text-2xl">Handy Tools</div>
         </Link>
       </nav>
-      <NavigationMenu>
+      <NavigationMenu className="hidden md:block">
         <NavigationMenuList>
           <NavigationMenuItem>
             <NavigationMenuTrigger>ToolKit</NavigationMenuTrigger>
@@ -93,7 +93,46 @@ export function Navigation() {
           {isPlaying ? <Pause /> : <KeyboardMusic />}
         </Button>
         <ModeToggle />
+
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="shrink-0 md:hidden"
+            >
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Toggle navigation menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right">
+            <nav className="grid gap-6 text-lg font-medium">
+              <Link
+                href="/"
+                className="flex items-center gap-2 text-lg font-semibold md:text-base"
+              >
+                <PocketKnifeIcon />
+                <div className="text-2xl">Handy Tools</div>
+              </Link>
+              <div className="flex flex-col gap-2">
+                <div className="text-md text-muted-foreground">ToolKit</div>
+                <div className="flex flex-col gap-2">
+                  {components.map((c) => (
+                    <Link
+                      className="text-base hover:opacity-80 focus:opacity-80"
+                      key={c.title}
+                      href={c.href}
+                    >
+                      {c.title}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </nav>
+          </SheetContent>
+        </Sheet>
       </div>
+
       <audio className="sr-only" ref={audioRef}>
         <source src="/music.mp3" type="audio/mpeg" />
         Your browser does not support the audio element.

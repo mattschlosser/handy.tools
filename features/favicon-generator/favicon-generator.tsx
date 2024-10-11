@@ -94,6 +94,7 @@ export default function FaviconGenerator() {
                   "image/png": [".png"],
                   "image/webp": [".webp"],
                 }}
+                instructions="A square PNG or SVG image. At least 512x512px size is recommended."
                 onDropAccepted={(files) => handleFileAccepted(files[0])}
               />
             )}
