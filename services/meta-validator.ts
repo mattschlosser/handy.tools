@@ -561,33 +561,20 @@ class MetaValidatorService {
     html: string,
     baseUrl: string
   ): Promise<RuleValidationResult[]> {
-    try {
-      const $ = cheerio.load(html);
+    const $ = cheerio.load(html);
 
-      const foundMetaTags: MetaTag[] = [];
+    const foundMetaTags: MetaTag[] = [];
 
-      $("meta, title, link, html").each((_, elem) => {
-        const tag = elem.tagName.toLowerCase();
-        const attributes: { [key: string]: string } = {};
-        Object.entries(elem.attribs).forEach(([key, value]) => {
-          attributes[key] = value;
-        });
-        foundMetaTags.push({ tag, attributes });
+    $("meta, title, link, html").each((_, elem) => {
+      const tag = elem.tagName.toLowerCase();
+      const attributes: { [key: string]: string } = {};
+      Object.entries(elem.attribs).forEach(([key, value]) => {
+        attributes[key] = value;
       });
-
-      return await this.runValidation(
-        this.metaTagRules,
-        foundMetaTags,
-        baseUrl
-      );
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(
-          "Failed to load site. Are you spamming this?" // TODO: Better rate limit handling
-        );
-      }
-      throw error;
-    }
+      foundMetaTags.push({ tag, attributes });
+    });
+    
+    return await this.runValidation(this.metaTagRules, foundMetaTags, baseUrl);
   }
 
   private async verifyManifest(

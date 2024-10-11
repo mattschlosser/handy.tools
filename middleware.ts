@@ -4,21 +4,22 @@ import { kv } from "@vercel/kv";
 
 const ratelimit = new Ratelimit({
   redis: kv,
-  // 50 requests from the same IP in 10 seconds
-  limiter: Ratelimit.slidingWindow(50, "10 s"),
+  limiter: Ratelimit.slidingWindow(10, "5 s"),
 });
 
 export async function middleware(request: NextRequest) {
+  console.log("Incoming request", request.url);
   // check if the request is a server action and apply the rate limiting then
-  if (typeof request.headers.get("Next-Action") === "string") {
-    const ip = request.ip ?? "121.0.0.1";
-    const { success } = await ratelimit.limit(ip);
-    if (!success) {
-      return new Response("Rate limited", { status: 429 });
-    }
+  const ip = request.ip ?? "121.0.0.1";
+  const { success } = await ratelimit.limit(ip);
+  if (!success) {
+    return Response.json(
+      { error: "You are making too many requests", details: "Rate limited." },
+      { status: 429 }
+    );
   }
 }
 
 export const config = {
-  matcher: '/meta-verifier',
+  matcher: "/api/:path*",
 };
