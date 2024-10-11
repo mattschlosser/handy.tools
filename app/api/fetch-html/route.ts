@@ -8,7 +8,6 @@ export async function GET(req: Request) {
       { error: "Missing or invalid url parameter" },
       { status: 400 }
     );
-    return;
   }
 
   try {

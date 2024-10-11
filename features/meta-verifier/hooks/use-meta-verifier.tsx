@@ -52,7 +52,11 @@ export function useMetaVerifier() {
     async (baseUrl: string): Promise<ValidationResult | undefined> => {
       dispatch({ type: "START_VERIFICATION" });
       try {
-        const result = await metaVerifierService.verifyWebsite(baseUrl);
+        const url =
+          baseUrl.includes("http") || baseUrl.includes("https")
+            ? baseUrl
+            : `https://${baseUrl}`;
+        const result = await metaVerifierService.verifyWebsite(url);
         dispatch({ type: "VERIFICATION_SUCCESS", payload: result });
         return result;
       } catch (error) {
