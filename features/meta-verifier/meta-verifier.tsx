@@ -10,6 +10,7 @@ import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { Spinner } from "@/components/ui/spinner";
 import { VerificationResult } from "./components/verification-result";
 import { AnimatePresence, motion } from "framer-motion";
+import { AppWindowIcon, CodeXmlIcon } from "lucide-react";
 
 export default function MetaVerifier() {
   const [showConfetti, setShowConfetti] = useState(false);
@@ -35,16 +36,18 @@ export default function MetaVerifier() {
         <div className="grow grid items-start md:grid-cols-3 gap-4 w-full h-full mx-auto md:overflow-hidden">
           <div
             className={cn(
-              "relative flex flex-col gap-2 md:col-span-2 border p-2 rounded-md bg-card h-full min-h-[300px] overflow-x-auto transition-all duration-200"
+              "relative flex flex-col gap-2 md:col-span-2 p-2 border rounded-md bg-card h-full min-h-[300px] overflow-x-auto transition-all duration-200"
             )}
           >
             {isVerifying && (
               <Spinner className="absolute inset-0 m-auto w-12 h-12" />
             )}
             {!isVerifying && result && (
-              <div className="flex flex-col gap-6 p-2">
-                <div className="flex flex-col gap-4">
-                  <div className="text-lg font-semibold">Meta Tags</div>
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-4 border p-2 bg-card rounded-md">
+                  <div className="flex items-center gap-2 text-lg font-semibold px-2 pt-2">
+                    <CodeXmlIcon className="h-6 w-6" />
+                    Meta Tags</div>
                   <div className="flex flex-col gap-3">
                     <AnimatePresence>
                       {result.metaTags.map((tag, i) => (
@@ -66,8 +69,10 @@ export default function MetaVerifier() {
                   </div>
                 </div>
                 {result.manifest && result.manifest?.length > 0 && (
-                  <div className="flex flex-col gap-4">
-                    <div className="text-lg font-semibold">Web Manifest</div>
+                  <div className="flex flex-col gap-4  p-2 bg-card border rounded-md">
+                    <div className="flex items-center gap-2 text-lg font-semibold px-2 pt-2">
+                      <AppWindowIcon className="h-6 w-6" />
+                      Web Manifest</div>
                     <div className="flex flex-col gap-3">
                       {result.manifest.map((tag) => (
                         <VerificationResult
