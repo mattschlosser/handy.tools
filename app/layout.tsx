@@ -13,7 +13,7 @@ const sansFont = Lexend({
 
 const monoFont = localFont({
   variable: "--font-mono",
-  src: "/fonts/CascadiaCode.woff2",
+  src: "../fonts/CascadiaCode.woff2",
 });
 
 export const metadata: Metadata = {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Confetti from "react-confetti";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,6 @@ import {
   ExclamationTriangleIcon,
 } from "@radix-ui/react-icons";
 import { Progress } from "@/components/ui/progress";
-import { useRef, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
