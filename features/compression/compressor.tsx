@@ -137,7 +137,7 @@ export default function Compressor() {
 
   return (
     <div className="grow flex flex-col gap-4 h-full w-full overflow-hidden">
-      <h1 className="text-2xl font-bold">The Compressor</h1>
+      <h1 className="text-2xl font-bold">Video Compressor</h1>
       <div className="grow grid items-start md:grid-cols-3 gap-4 w-full h-full mx-auto overflow-hidden">
         <div className="flex flex-col gap-2 md:col-span-2 border p-2 rounded-md bg-card h-full min-h-[300px] max-h-[847px]">
           <div className="relative flex items-center justify-center h-full">
