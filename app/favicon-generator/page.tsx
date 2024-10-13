@@ -2,7 +2,8 @@ import FaviconGenerator from "@/features/favicon-generator/favicon-generator";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  description: "Generate favicons for your website easily with our online tool",
+  description:
+    "A modern favicon generator for your website using the latest web standards with backwards compatibility",
   keywords: ["favicon", "generator", "icon", "web development", "design"],
 };
 

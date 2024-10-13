@@ -18,7 +18,8 @@ const monoFont = localFont({
 
 export const metadata: Metadata = {
   title: "Handy Tools",
-  description: "Tools for developers",
+  description:
+    "Web based tools for developers. Video Compressor, Favicon Generator, Meta Tags Generator, and more.",
   manifest: "/site.webmanifest",
   icons: [
     {
