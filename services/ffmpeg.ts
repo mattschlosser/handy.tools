@@ -64,7 +64,7 @@ export class FFmpegService {
     this.ffmpeg = new FFmpeg();
   }
 
-  async load(baseURL = ''): Promise<void> {
+  async load(baseURL = ""): Promise<void> {
     await this.ffmpeg.load({
       coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
       wasmURL: await toBlobURL(
@@ -88,7 +88,7 @@ export class FFmpegService {
       preset,
     } = options;
 
-    const args = ["-threads", "4"];
+    const args = ["-threads", "3"];
 
     if (removeAudio) {
       args.push("-an");
@@ -262,7 +262,10 @@ export class FFmpegService {
       await getVideoMetadata(file);
 
     // Sample at the beginning, middle, and end of the video
-    const sampleDuration = Math.min(options.previewDuration || DEFAULT_PREVIEW_DURATION, totalDuration);
+    const sampleDuration = Math.min(
+      options.previewDuration || DEFAULT_PREVIEW_DURATION,
+      totalDuration
+    );
     const sampleOutputFileName = `sample_output-${getRandomId()}.mp4`;
     const originalOutputFileName = `original_output-${getRandomId()}.mp4`;
     const inputDir = `${INPUT_DIR}-${getRandomId()}`;
@@ -278,7 +281,7 @@ export class FFmpegService {
       this.ffmpeg.exec(
         [
           "-ss",
-          '0',
+          "0",
           "-i",
           `${inputDir}/${file.name}`,
           "-t",
@@ -293,7 +296,7 @@ export class FFmpegService {
       this.ffmpeg.exec(
         [
           "-ss",
-          '0',
+          "0",
           "-i",
           `${inputDir}/${file.name}`,
           "-t",

@@ -2,7 +2,6 @@
 
 import React from "react";
 import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
-import { funky } from "react-syntax-highlighter/dist/esm/styles/prism";
 import jsx from "react-syntax-highlighter/dist/esm/languages/prism/jsx";
 import js from "react-syntax-highlighter/dist/esm/languages/prism/javascript";
 import markup from "react-syntax-highlighter/dist/esm/languages/prism/markup";

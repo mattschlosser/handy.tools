@@ -128,9 +128,9 @@ export const useFfmpeg = () => {
           dispatch({ type: "TRANSCODE_PROGRESS", progress: progress.progress });
         });
 
-        // ffmpegService.ffmpeg.on("log", (log) => {
-        //   console.info(log);
-        // });
+        ffmpegService.ffmpeg.on("log", (log) => {
+          console.info(log);
+        });
       } catch (error) {
         console.error(error);
         dispatch({ type: "LOAD_FAILURE", error: (error as Error).message });

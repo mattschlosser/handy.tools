@@ -32,6 +32,11 @@ const components: { title: string; href: string; description: string }[] = [
     href: "/meta-verifier",
     description: "Verify meta tags of any website.",
   },
+  {
+    title: "SVG Minifier",
+    href: "/svg-minifier",
+    description: "Minify your SVG and export it as a React or React Native component",
+  },
 ];
 
 export function Navigation() {
