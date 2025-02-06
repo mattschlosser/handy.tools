@@ -3,7 +3,7 @@
 import { getRandomId } from "@/lib/get-random-id";
 import { getVideoMetadata } from "@/features/compression/lib/get-video-metadata";
 import { qualityToCrf } from "@/features/compression/lib/quality-to-crf";
-import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { FFmpeg, FFFSType } from "@ffmpeg/ffmpeg";
 import { toBlobURL } from "@ffmpeg/util";
 
 export type PresetOptions =
@@ -88,7 +88,7 @@ export class FFmpegService {
       preset,
     } = options;
 
-    const args = ["-threads", "3"];
+    const args = ["-threads", "2"];
 
     if (removeAudio) {
       args.push("-an");
@@ -138,8 +138,7 @@ export class FFmpegService {
 
     await this.ffmpeg.createDir(inputDir);
 
-    // @ts-expect-error WORKERFS is not defined
-    await this.ffmpeg.mount("WORKERFS", { files: [file] }, inputDir);
+    await this.ffmpeg.mount(FFFSType.WORKERFS, { files: [file] }, inputDir);
 
     const args = this.transcodeOptionsToArgs(options);
 
@@ -182,8 +181,7 @@ export class FFmpegService {
 
     await this.ffmpeg.createDir(inputDir);
 
-    // @ts-expect-error WORKERFS is not defined
-    await this.ffmpeg.mount("WORKERFS", { files: [file] }, inputDir);
+    await this.ffmpeg.mount(FFFSType.WORKERFS, { files: [file] }, inputDir);
 
     const args = this.transcodeOptionsToArgs(options);
 
@@ -272,8 +270,7 @@ export class FFmpegService {
 
     await this.ffmpeg.createDir(inputDir);
 
-    // @ts-expect-error WORKERFS is not defined
-    await this.ffmpeg.mount("WORKERFS", { files: [file] }, inputDir);
+    await this.ffmpeg.mount(FFFSType.WORKERFS, { files: [file] }, inputDir);
 
     const args = this.transcodeOptionsToArgs(options);
 
