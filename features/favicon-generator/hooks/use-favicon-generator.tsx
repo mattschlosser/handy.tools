@@ -28,6 +28,12 @@ type MagickAction =
       payload: { type: string; message: string } | null;
     };
 
+/**
+ * Reducer function for managing favicon generator state
+ * @param state - Current state of the favicon generator
+ * @param action - Action to update the state
+ * @returns Updated state
+ */
 function faviconGeneratorReducer(
   state: MagickState,
   action: MagickAction
@@ -50,6 +56,10 @@ function faviconGeneratorReducer(
   }
 }
 
+/**
+ * Hook for generating favicons and related icons from an image file
+ * @returns Object containing generator state and functions
+ */
 export function useFaviconGenerator() {
   const magickServiceRef = useRef<MagickService>(new MagickService());
 
@@ -60,6 +70,12 @@ export function useFaviconGenerator() {
     error: null,
   });
 
+  /**
+   * Generates a set of favicon and related icons from an input file
+   * @param file - Source image file
+   * @param options - Configuration options for icon generation
+   * @returns Promise resolving to a zip archive blob containing all generated icons, or null if generation fails
+   */
   const generateIcons = async (file: File, options: GenerateIconsOptions) => {
     try {
       dispatch({ type: "GENERATE_FAVICON_START" });
@@ -133,6 +149,13 @@ export function useFaviconGenerator() {
     }
   };
 
+  /**
+   * Creates a web manifest file for PWA support
+   * @param name - Full name of the application
+   * @param shortName - Short name of the application
+   * @param options - Configuration options including theme and background colors
+   * @returns Blob containing the web manifest JSON
+   */
   const createWebManifestBlob = (
     name: string,
     shortName: string,

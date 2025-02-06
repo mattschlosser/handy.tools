@@ -37,6 +37,12 @@ export type FFmpegAction =
   | { type: "ABORT" }
   | { type: "RESET_ERROR" };
 
+/**
+ * Reducer function for managing FFmpeg state transitions
+ * @param state - Current FFmpeg state
+ * @param action - Action to perform on the state
+ * @returns Updated FFmpeg state
+ */
 export function ffmpegReducer(
   state: FFmpegState,
   action: FFmpegAction
@@ -100,8 +106,16 @@ export function ffmpegReducer(
   }
 }
 
-// const DEFAULT_BASE_URL = "https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd";
-
+/**
+ * Hook for managing FFmpeg video processing operations
+ * @returns Object containing FFmpeg state and methods for video processing
+ * - state: Current processing state and progress
+ * - load: Function to initialize FFmpeg
+ * - abort: Function to cancel current operation
+ * - transcode: Function to convert video to different format/quality
+ * - extractThumbnail: Function to generate video thumbnail
+ * - generateVideoPreview: Function to create preview version of video
+ */
 export const useFfmpeg = () => {
   const [state, dispatch] = useReducer(ffmpegReducer, {
     isLoaded: false,
@@ -115,30 +129,36 @@ export const useFfmpeg = () => {
 
   const ffmpegServiceRef = useRef<null | FFmpegService>(null);
 
-  const load = useCallback(
-    async () => {
-      if (!ffmpegServiceRef.current) return;
-      const ffmpegService = ffmpegServiceRef.current;
-      dispatch({ type: "LOAD_START" });
-      try {
-        await ffmpegService.load();
-        dispatch({ type: "LOAD_SUCCESS" });
+  /**
+   * Initializes FFmpeg service and sets up event listeners
+   */
+  const load = useCallback(async () => {
+    if (!ffmpegServiceRef.current) return;
+    const ffmpegService = ffmpegServiceRef.current;
+    dispatch({ type: "LOAD_START" });
+    try {
+      await ffmpegService.load();
+      dispatch({ type: "LOAD_SUCCESS" });
 
-        ffmpegService.ffmpeg.on("progress", (progress) => {
-          dispatch({ type: "TRANSCODE_PROGRESS", progress: progress.progress });
-        });
+      ffmpegService.ffmpeg.on("progress", (progress) => {
+        dispatch({ type: "TRANSCODE_PROGRESS", progress: progress.progress });
+      });
 
-        ffmpegService.ffmpeg.on("log", (log) => {
-          console.info(log);
-        });
-      } catch (error) {
-        console.error(error);
-        dispatch({ type: "LOAD_FAILURE", error: (error as Error).message });
-      }
-    },
-    [ffmpegServiceRef]
-  );
+      ffmpegService.ffmpeg.on("log", (log) => {
+        console.info(log);
+      });
+    } catch (error) {
+      console.error(error);
+      dispatch({ type: "LOAD_FAILURE", error: (error as Error).message });
+    }
+  }, [ffmpegServiceRef]);
 
+  /**
+   * Transcodes a video file according to specified options
+   * @param file - Video file to transcode
+   * @param options - Transcoding configuration options
+   * @returns Promise resolving to transcode output or null if operation fails/aborts
+   */
   const transcode = useCallback(
     async (
       file: File,
@@ -167,16 +187,18 @@ export const useFfmpeg = () => {
     [ffmpegServiceRef]
   );
 
+  /**
+   * Extracts a thumbnail image from a video file
+   * @param file - Video file to extract thumbnail from
+   * @returns Promise resolving to thumbnail output or null if operation fails/aborts
+   */
   const extractThumbnail = useCallback(
-    async (
-      file: File,
-      options: TranscodeOptions
-    ): Promise<ThumbnailOutput | null> => {
+    async (file: File): Promise<ThumbnailOutput | null> => {
       if (!ffmpegServiceRef.current) return null;
       const ffmpegService = ffmpegServiceRef.current;
       dispatch({ type: "PROCESS_THUMBNAIL_START" });
       try {
-        const result = await ffmpegService.extractThumbnail(file, options);
+        const result = await ffmpegService.extractThumbnail(file);
         dispatch({ type: "PROCESS_THUMBNAIL_SUCCESS" });
         return result;
       } catch (error) {
@@ -195,6 +217,12 @@ export const useFfmpeg = () => {
     [ffmpegServiceRef]
   );
 
+  /**
+   * Generates a preview version of a video file
+   * @param file - Video file to generate preview from
+   * @param options - Preview generation configuration options
+   * @returns Promise resolving to preview output or null if operation fails/aborts
+   */
   const generateVideoPreview = useCallback(
     async (
       file: File,
@@ -223,6 +251,9 @@ export const useFfmpeg = () => {
     [ffmpegServiceRef]
   );
 
+  /**
+   * Aborts current FFmpeg operation
+   */
   const abort = useCallback(() => {
     if (ffmpegServiceRef.current) {
       ffmpegServiceRef.current.abort();

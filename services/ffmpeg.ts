@@ -35,7 +35,6 @@ export type TranscodeOutput = {
 
 export type ThumbnailOutput = {
   thumbnail: Blob;
-  frame: Blob;
 };
 
 export type PreviewOutput = {
@@ -53,6 +52,12 @@ const DEFAULT_FPS = 30;
 const INPUT_DIR = "/input";
 const TIMEOUT = -1;
 
+/**
+ * Sanitizes a filename by replacing non-alphanumeric characters with underscores
+ * and converting to lowercase
+ * @param name - The original filename
+ * @returns The sanitized filename
+ */
 const sanitizeFileName = (name: string) =>
   name.replace(/[^a-z0-9.]/gi, "_").toLowerCase();
 
@@ -64,6 +69,10 @@ export class FFmpegService {
     this.ffmpeg = new FFmpeg();
   }
 
+  /**
+   * Loads the FFmpeg core, WebAssembly, and worker files
+   * @param baseURL - Base URL for loading FFmpeg assets
+   */
   async load(baseURL = ""): Promise<void> {
     await this.ffmpeg.load({
       coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
@@ -78,6 +87,11 @@ export class FFmpegService {
     });
   }
 
+  /**
+   * Converts transcode options into FFmpeg command line arguments
+   * @param options - Transcoding options including codec, quality, scale, etc.
+   * @returns Array of FFmpeg command arguments
+   */
   transcodeOptionsToArgs(options: TranscodeOptions) {
     const {
       codec = DEFAULT_CODEC,
@@ -122,6 +136,13 @@ export class FFmpegService {
     return args;
   }
 
+  /**
+   * Transcodes a video file using specified options
+   * @param file - Input video file
+   * @param options - Transcoding options
+   * @param signal - Optional AbortSignal for cancellation
+   * @returns Promise containing the transcoded file and filename
+   */
   async transcode(
     file: File,
     options: TranscodeOptions,
@@ -167,15 +188,19 @@ export class FFmpegService {
     };
   }
 
+  /**
+   * Extracts a thumbnail from a video file
+   * @param file - Input video file
+   * @param signal - Optional AbortSignal for cancellation
+   * @returns Promise containing the thumbnail (WebP)
+   */
   async extractThumbnail(
     file: File,
-    options: TranscodeOptions,
     signal?: AbortSignal
   ): Promise<ThumbnailOutput> {
     this.abortController = new AbortController();
     const abortSignal = signal || this.abortController.signal;
 
-    const tempFileName = `temp-${getRandomId()}.mp4`;
     const outputImageFileName = `thumb-${getRandomId()}.webp`;
     const inputDir = `${INPUT_DIR}-${getRandomId()}`;
 
@@ -183,34 +208,10 @@ export class FFmpegService {
 
     await this.ffmpeg.mount(FFFSType.WORKERFS, { files: [file] }, inputDir);
 
-    const args = this.transcodeOptionsToArgs(options);
-
-    const tempThumbResult = await this.ffmpeg.exec(
-      [
-        "-i",
-        `${inputDir}/${file.name}`,
-        "-frames:v",
-        "1",
-        ...args,
-        tempFileName,
-      ],
-      TIMEOUT,
-      { signal: abortSignal }
-    );
-
-    if (tempThumbResult !== 0) {
-      await this.ffmpeg.unmount(inputDir);
-      await this.ffmpeg.deleteDir(inputDir);
-      throw new Error("Thumbnail extraction error");
-    }
-
-    const tempFileData = await this.ffmpeg.readFile(tempFileName);
-    const tempData = new Uint8Array(tempFileData as ArrayBuffer);
-
     const thumbResult = await this.ffmpeg.exec(
       [
         "-i",
-        tempFileName,
+        `${inputDir}/${file.name}`,
         "-frames:v",
         "1",
         "-f",
@@ -228,7 +229,6 @@ export class FFmpegService {
     );
 
     if (thumbResult !== 0) {
-      await this.ffmpeg.deleteFile(tempFileName);
       await this.ffmpeg.unmount(inputDir);
       await this.ffmpeg.deleteDir(inputDir);
       throw new Error("Thumbnail extraction error");
@@ -238,16 +238,21 @@ export class FFmpegService {
     const data = new Uint8Array(fileData as ArrayBuffer);
 
     await this.ffmpeg.deleteFile(outputImageFileName);
-    await this.ffmpeg.deleteFile(tempFileName);
     await this.ffmpeg.unmount(inputDir);
     await this.ffmpeg.deleteDir(inputDir);
 
     return {
       thumbnail: new Blob([data.buffer], { type: "image/webp" }),
-      frame: new Blob([tempData.buffer], { type: "video/mp4" }),
     };
   }
 
+  /**
+   * Generates a preview of the video compression by processing a short segment
+   * @param file - Input video file
+   * @param options - Transcoding options
+   * @param signal - Optional AbortSignal for cancellation
+   * @returns Promise containing original and compressed previews, and estimated final size
+   */
   async generatePreview(
     file: File,
     options: TranscodeOptions,
@@ -338,10 +343,16 @@ export class FFmpegService {
     };
   }
 
+  /**
+   * Terminates the FFmpeg instance
+   */
   terminate(): void {
     this.ffmpeg.terminate();
   }
 
+  /**
+   * Aborts any ongoing FFmpeg operations
+   */
   abort(): void {
     if (this.abortController) {
       this.abortController.abort();
