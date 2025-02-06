@@ -259,7 +259,6 @@ export class FFmpegService {
     const { duration: totalDuration, sizeMB: originalSizeMB } =
       await getVideoMetadata(file);
 
-    // Sample at the beginning, middle, and end of the video
     const sampleDuration = Math.min(
       options.previewDuration || DEFAULT_PREVIEW_DURATION,
       totalDuration
