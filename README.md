@@ -1,4 +1,4 @@
-# Handy Tools
+# ~~Tiny Vid~~ Handy Tools
 
 A bunch of tools to help with daily tasks.
 
