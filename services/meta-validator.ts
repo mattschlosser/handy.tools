@@ -300,60 +300,57 @@ class MetaValidatorService {
         },
       },
       {
-        title: "48x48 PNG Favicon",
+        title: "48x48 PNG Favicon (Or SVG icon)",
         description:
-          "Checks if the page has a 48x48 PNG favicon for better quality on high-DPI displays.",
+          "Checks if the page has a 48x48 PNG favicon or SVG icon for better quality on high-DPI displays.",
         check: async (data: MetaTag[], baseUrl: string) => {
           const result: CheckResult = {
             errors: [],
             successes: [],
           };
-          const iconTag = data.find(
+
+          const pngIconTag = data.find(
             (tag) =>
               tag.tag === "link" &&
               tag.attributes.rel === "icon" &&
               tag.attributes.type === "image/png" &&
               tag.attributes.sizes === "48x48"
           );
-          if (!iconTag) {
-            return { errors: ["48x48 PNG Favicon is missing"], successes: [] };
-          }
-          const href = this.resolveUrl(baseUrl, iconTag.attributes.href);
-          const expectedType = "image/png";
-          const iconValidationResult = await this.validateIcon(
-            href,
-            expectedType
-          );
-          result.errors.push(...iconValidationResult.errors);
-          result.successes.push(...iconValidationResult.successes);
-          return result;
-        },
-      },
-      {
-        title: "Shortcut Icon",
-        description:
-          "Checks if the page has a shortcut icon link rel which is a legacy method for specifying favicons.",
-        check: async (data: MetaTag[], baseUrl: string) => {
-          const result: CheckResult = {
-            errors: [],
-            successes: [],
-          };
-          const iconTag = data.find(
+
+          const svgIconTag = data.find(
             (tag) =>
-              tag.tag === "link" && tag.attributes.rel === "shortcut icon"
+              tag.tag === "link" &&
+              tag.attributes.rel === "icon" &&
+              tag.attributes.type === "image/svg+xml"
           );
-          if (!iconTag) {
-            result.errors.push("Shortcut Icon is missing");
-            return result;
+
+          if (!pngIconTag && !svgIconTag) {
+            return {
+              errors: ["Neither 48x48 PNG Favicon nor SVG icon found"],
+              successes: [],
+            };
           }
-          const href = this.resolveUrl(baseUrl, iconTag.attributes.href);
-          const expectedType = iconTag.attributes.type;
-          const iconValidationResult = await this.validateIcon(
-            href,
-            expectedType
-          );
-          result.errors.push(...iconValidationResult.errors);
-          result.successes.push(...iconValidationResult.successes);
+
+          if (pngIconTag) {
+            const href = this.resolveUrl(baseUrl, pngIconTag.attributes.href);
+            const iconValidationResult = await this.validateIcon(
+              href,
+              "image/png"
+            );
+            result.errors.push(...iconValidationResult.errors);
+            result.successes.push(...iconValidationResult.successes);
+          }
+
+          if (svgIconTag) {
+            const href = this.resolveUrl(baseUrl, svgIconTag.attributes.href);
+            const iconValidationResult = await this.validateIcon(
+              href,
+              "image/svg+xml"
+            );
+            result.errors.push(...iconValidationResult.errors);
+            result.successes.push(...iconValidationResult.successes);
+          }
+
           return result;
         },
       },
@@ -573,7 +570,7 @@ class MetaValidatorService {
       });
       foundMetaTags.push({ tag, attributes });
     });
-    
+
     return await this.runValidation(this.metaTagRules, foundMetaTags, baseUrl);
   }
 
