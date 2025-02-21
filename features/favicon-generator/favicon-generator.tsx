@@ -229,7 +229,7 @@ export default function FaviconGenerator() {
 
             <div className="flex flex-col border bg-card p-4 rounded-md overflow-hidden">
               <ScrollArea>
-                <h2 className="text-xl font-semibold pb-2">Good to know</h2>
+                <h2 className="text-xl font-semibold pb-2">💡 Good to know</h2>
                 <div className="flex flex-col gap-2">
                   <p className="text-sm">
                     This generator creates a complete, modern favicon set
@@ -246,13 +246,17 @@ export default function FaviconGenerator() {
                       </Link>
                     </Button>{" "}
                     and avoids generating unnecessary files that are no longer
-                    required.{" "}
+                    required.
                   </p>
                   <p className="text-sm">
-                    💡 For optimal quality, upload an SVG file. SVGs scale
+                    For optimal quality, upload an SVG file. SVGs scale
                     perfectly to any size, allowing for crisp icons on
                     high-resolution displays while keeping the .ico file with a
                     small set of icon sizes for compatibility.
+                  </p>
+                  <p className="text-sm">
+                    Icon generation happens in the browser and no data is stored
+                    on the server.
                   </p>
                 </div>
               </ScrollArea>

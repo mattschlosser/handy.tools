@@ -76,7 +76,7 @@ export class MagickService {
    */
   public async generateFavicon(
     file: File,
-    sizes: number[] = [16, 32, 48, 64]
+    sizes: number[] = [16, 32, 48]
   ): Promise<Blob> {
     if (!this.initialized) {
       throw new Error("ImageMagick has not been initialized.");
@@ -86,7 +86,8 @@ export class MagickService {
       try {
         let imageFile = file;
         if (file.type === "image/svg+xml") {
-          imageFile = await convertSVGToPNG(file, sizes[0], sizes[0]);
+          const largestSize = Math.max(...sizes);
+          imageFile = await convertSVGToPNG(file, largestSize, largestSize);
         }
 
         const imageBuffer = await imageFile.arrayBuffer();
