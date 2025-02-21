@@ -185,6 +185,7 @@ export function useFaviconGenerator() {
           sizes: "512x512",
         },
       ],
+      start_url: ".",
       theme_color: themeColor,
       background_color: backgroundColor,
       display: "standalone",
