@@ -1,6 +1,6 @@
 # Handy Tools
 
-A bunch of browser based tools for tasks that I find annoying in one place.
+A bunch of browser based tools for tasks that I find annoying. All in one place.
 
 - [x] Video compression
 - [x] Meta icon generator
