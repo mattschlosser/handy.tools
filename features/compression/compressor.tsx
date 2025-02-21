@@ -26,6 +26,8 @@ import { downloadFile } from "@/lib/download-file";
 import { useFfmpeg } from "@/features/compression/hooks/use-ffmpeg";
 import { VideoMetadataDisplay } from "./components/video-metadata-display";
 import { VideoPreview } from "./components/video-preview";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import Link from "next/link";
 
 export default function Compressor() {
   const [showConfetti, setShowConfetti] = useState(false);
@@ -217,22 +219,26 @@ export default function Compressor() {
             </Alert>
           )}
         </div>
-        <aside className="flex flex-col col-span-1 gap-4 h-full overflow-auto">
-          <div className="flex flex-col gap-2 border bg-card p-4 rounded-md md:h-full md:overflow-y-auto">
-            <h2 className="text-xl font-semibold">Settings</h2>
-            <VideoSettings
-              isDisabled={isDisabled}
-              cOptions={cOptions}
-              onOptionsChange={handleOptionsChange}
-            />
+        <aside className="flex flex-col col-span-1 gap-4 h-full overflow-hidden">
+          <div className="flex flex-col border p-1 bg-card rounded-md overflow-hidden">
+            <ScrollArea className="p-3">
+              <div className="flex flex-col gap-2 grow">
+                <h2 className="text-xl font-semibold">Settings</h2>
+                <VideoSettings
+                  isDisabled={isDisabled}
+                  cOptions={cOptions}
+                  onOptionsChange={handleOptionsChange}
+                />
+              </div>
+            </ScrollArea>
           </div>
           <AnimatePresence>
-            {files && files.length > 0 && (
+            {files.length > 0 && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex flex-col gap-2 mt-auto border bg-card p-4 rounded-md"
+                className="flex flex-col gap-2 border bg-card p-4 rounded-md"
               >
                 <h2 className="text-xl font-semibold">Details</h2>
                 {videoMetadata && (
@@ -273,6 +279,33 @@ export default function Compressor() {
               </motion.div>
             )}
           </AnimatePresence>
+          {files.length === 0 && (
+            <div className="flex flex-col border bg-card p-1 rounded-md md:min-h-[180px] overflow-hidden">
+              <ScrollArea className="p-3">
+                <h2 className="text-xl font-semibold pb-2">Good to know</h2>
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm">
+                    The compression runs entirely in your browser. No data is
+                    stored on the server. Because of this, there are some
+                    limitations of speed and file size.
+                  </p>
+                  <p className="text-sm">
+                    Huge props to the{" "}
+                    <Button variant="link" asChild className="h-auto p-0">
+                      <Link
+                        href="https://github.com/ffmpegwasm/ffmpeg.wasm"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        ffmpeg.wasm
+                      </Link>
+                    </Button>{" "}
+                    devs for making this possible.
+                  </p>
+                </div>
+              </ScrollArea>
+            </div>
+          )}
         </aside>
         {showConfetti && (
           <Confetti

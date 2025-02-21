@@ -351,7 +351,7 @@ export function VideoSettings({
               </div>
               <p className="text-sm text-gray-500">
                 Compression speed. A slower preset will provide slightly better
-                quality, but will take longer to process. Faster values are
+                quality, but will take longer to process and potential crash the compression. Faster values are
                 recommended for most cases.
               </p>
             </div>
