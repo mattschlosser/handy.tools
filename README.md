@@ -1,6 +1,6 @@
-# ~~Tiny Vid~~ Handy Tools
+# Handy Tools
 
-A bunch of tools to help with daily tasks.
+A bunch of browser based tools for tasks that I find annoying.
 
 - [x] Video compression
 - [x] Meta icon generator
