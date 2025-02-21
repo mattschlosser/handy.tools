@@ -251,8 +251,8 @@ export default function FaviconGenerator() {
                   <p className="text-sm">
                     💡 For optimal quality, upload an SVG file. SVGs scale
                     perfectly to any size, allowing for crisp icons on
-                    high-resolution displays while keeping the .ico file size
-                    small by excluding unnecessarily large variants.
+                    high-resolution displays while keeping the .ico file with a
+                    small set of icon sizes for compatibility.
                   </p>
                 </div>
               </ScrollArea>
