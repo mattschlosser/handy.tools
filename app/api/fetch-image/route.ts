@@ -1,8 +1,9 @@
+const supportedImageExtensions = [".png", ".jpg", ".jpeg", ".webp", ".svg"];
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const url = searchParams.get("url");
 
-  // Check if the URL parameter is provided and is a string
   if (!url || typeof url !== "string") {
     return Response.json(
       { error: "Missing or invalid url parameter" },
@@ -10,11 +11,15 @@ export async function GET(req: Request) {
     );
   }
 
-  try {
-    // Validate the URL format
-    const parsedUrl = new URL(url);
+  if (!supportedImageExtensions.some((ext) => url.endsWith(ext))) {
+    return Response.json(
+      { error: "Invalid image url" },
+      { status: 400 }
+    );
+  }
 
-    // Optional: Restrict to certain protocols (e.g., http and https)
+  try {
+    const parsedUrl = new URL(url);
     if (!["http:", "https:"].includes(parsedUrl.protocol)) {
       return Response.json(
         {
@@ -24,22 +29,20 @@ export async function GET(req: Request) {
       );
     }
 
-    // Fetch the HTML content from the provided URL
-    const response = await fetch(parsedUrl.toString(), { method: "HEAD" });
+    const response = await fetch(parsedUrl.toString());
 
-    // Check if the fetch was successful
     if (!response.ok) {
       return Response.json(
         {
-          error: `Failed to fetch Content Headers. Status: ${response.status} ${response.statusText}`,
+          error: `Failed to fetch image. Status: ${response.status} ${response.statusText}`,
         },
         { status: response.status }
       );
     }
 
-    const headers = await response.headers.get("content-type");
+    const contentType = response.headers.get("content-type");
 
-    if (headers === null) {
+    if (!contentType) {
       return Response.json(
         {
           error: "No content type found",
@@ -48,14 +51,29 @@ export async function GET(req: Request) {
       );
     }
 
-    return new Response(headers, {
+    if (!contentType.startsWith("image/")) {
+      return Response.json(
+        {
+          error: "URL does not point to an image",
+        },
+        { status: 400 }
+      );
+    }
+
+    const imageData = await response.blob();
+
+    return new Response(imageData, {
+      headers: {
+        "Content-Type": contentType
+      },
       status: 200,
     });
+
   } catch (error) {
-    console.error("Error fetching Content Headers:", (error as Error).message);
+    console.error("Error fetching image:", (error as Error).message);
     return Response.json(
       {
-        error: "Failed to fetch Content Type",
+        error: "Failed to fetch image",
         details: (error as Error).message,
       },
       { status: 500 }

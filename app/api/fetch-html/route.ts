@@ -2,7 +2,6 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const url = searchParams.get("url");
 
-  // Check if the URL parameter is provided and is a string
   if (!url || typeof url !== "string") {
     return Response.json(
       { error: "Missing or invalid url parameter" },
@@ -11,10 +10,7 @@ export async function GET(req: Request) {
   }
 
   try {
-    // Validate the URL format
     const parsedUrl = new URL(url);
-
-    // Optional: Restrict to certain protocols (e.g., http and https)
     if (!["http:", "https:"].includes(parsedUrl.protocol)) {
       return Response.json(
         {
@@ -24,10 +20,7 @@ export async function GET(req: Request) {
       );
     }
 
-    // Fetch the HTML content from the provided URL
     const response = await fetch(parsedUrl.toString());
-
-    // Check if the fetch was successful
     if (!response.ok) {
       return Response.json(
         {
@@ -38,9 +31,6 @@ export async function GET(req: Request) {
     }
 
     const html = await response.text();
-
-    // Set the Content-Type header to text/html
-    // Send the HTML content as the response
     return new Response(html, {
       status: 200,
       headers: {

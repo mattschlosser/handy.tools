@@ -29,7 +29,10 @@ export function SiteUrlInput(props: SiteUrlInputProps) {
           id="url"
           placeholder="https://example.com"
         />
-        <Button onClick={() => onSubmit(url)} disabled={isVerifying}>
+        <Button
+          onClick={() => onSubmit(url)}
+          disabled={isVerifying || url.length === 0}
+        >
           {isVerifying && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
           {isVerifying ? "Verifying..." : "Verify"}
         </Button>

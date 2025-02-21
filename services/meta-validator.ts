@@ -1,6 +1,6 @@
 import * as cheerio from "cheerio";
-import fetchContentHeaders from "@/lib/fetch-content-type";
 import fetchHtml from "@/lib/fetch-html";
+import fetchImage from "@/lib/fetch-image";
 
 interface MetaTag {
   tag: string;
@@ -219,22 +219,6 @@ class MetaValidatorService {
         },
       },
       {
-        title: "Open Graph Title",
-        description: "Checks if the page has an Open Graph title meta tag",
-        check: async (data: MetaTag[]) => {
-          if (
-            data.some(
-              (tag) =>
-                tag.tag === "meta" && tag.attributes.property === "og:title"
-            )
-          ) {
-            return { errors: [], successes: ["Open Graph title is present"] };
-          } else {
-            return { errors: ["Open Graph title is missing"], successes: [] };
-          }
-        },
-      },
-      {
         title: "ICO Favicon",
         description:
           "Checks if has a an .ICO favicon which is required for compatibility with older browsers.",
@@ -269,86 +253,103 @@ class MetaValidatorService {
       },
       {
         title: "Favicon",
-        description: "Checks if the page has a favicon with a valid MIME type.",
-        check: async (data: MetaTag[], baseUrl: string) => {
-          const result: CheckResult = {
-            errors: [],
-            successes: [],
-          };
-          const iconTag = data.find(
-            (tag) =>
-              tag.tag === "link" &&
-              (tag.attributes.rel === "icon" ||
-                tag.attributes.rel === "shortcut icon") &&
-              ["image/x-icon", "image/png", "image/svg+xml"].includes(
-                tag.attributes.type
-              )
-          );
-          if (!iconTag) {
-            result.errors.push("Favicon is missing");
-            return result;
-          }
-          const href = this.resolveUrl(baseUrl, iconTag.attributes.href);
-          const expectedType = iconTag.attributes.type;
-          const iconValidationResult = await this.validateIcon(
-            href,
-            expectedType
-          );
-          result.errors.push(...iconValidationResult.errors);
-          result.successes.push(...iconValidationResult.successes);
-          return result;
-        },
-      },
-      {
-        title: "48x48 PNG Favicon (Or SVG icon)",
         description:
-          "Checks if the page has a 48x48 PNG favicon or SVG icon for better quality on high-DPI displays.",
+          "Checks if the page has a favicon with a valid MIME type and size.",
         check: async (data: MetaTag[], baseUrl: string) => {
           const result: CheckResult = {
             errors: [],
             successes: [],
           };
 
-          const pngIconTag = data.find(
+          const icoIcon = data.find(
             (tag) =>
               tag.tag === "link" &&
               tag.attributes.rel === "icon" &&
-              tag.attributes.type === "image/png" &&
-              tag.attributes.sizes === "48x48"
+              tag.attributes.type === "image/x-icon"
           );
 
-          const svgIconTag = data.find(
+          const svgIcon = data.find(
             (tag) =>
               tag.tag === "link" &&
               tag.attributes.rel === "icon" &&
               tag.attributes.type === "image/svg+xml"
           );
 
-          if (!pngIconTag && !svgIconTag) {
-            return {
-              errors: ["Neither 48x48 PNG Favicon nor SVG icon found"],
-              successes: [],
-            };
+          const pngIcon = data.find(
+            (tag) =>
+              tag.tag === "link" &&
+              tag.attributes.rel === "icon" &&
+              tag.attributes.type === "image/png"
+          );
+
+          const jpegIcon = data.find(
+            (tag) =>
+              tag.tag === "link" &&
+              tag.attributes.rel === "icon" &&
+              tag.attributes.type === "image/jpeg"
+          );
+
+          if (!icoIcon && !svgIcon && !pngIcon && !jpegIcon) {
+            result.errors.push("Favicon is missing");
+            return result;
           }
 
-          if (pngIconTag) {
-            const href = this.resolveUrl(baseUrl, pngIconTag.attributes.href);
+          if (svgIcon) {
+            const href = this.resolveUrl(baseUrl, svgIcon.attributes.href);
+            const expectedType = "image/svg+xml";
             const iconValidationResult = await this.validateIcon(
               href,
-              "image/png"
+              expectedType
             );
+
             result.errors.push(...iconValidationResult.errors);
             result.successes.push(...iconValidationResult.successes);
+
+            if (!icoIcon) {
+              result.successes.push(
+                "But it doesn't have an .ico icon. It's recommended to have an .ico icon for compatibility with older browsers."
+              );
+            }
+
+            result.successes.push("Has a SVG favicon");
+
+            return result;
           }
 
-          if (svgIconTag) {
-            const href = this.resolveUrl(baseUrl, svgIconTag.attributes.href);
+          if (pngIcon) {
+            const href = this.resolveUrl(baseUrl, pngIcon.attributes.href);
+            const expectedType = "image/png";
             const iconValidationResult = await this.validateIcon(
               href,
-              "image/svg+xml"
+              expectedType,
+              16,
+              256
             );
+
             result.errors.push(...iconValidationResult.errors);
             result.successes.push(...iconValidationResult.successes);
+            result.successes.push("Has a PNG favicon");
+
+            return result;
+          }
+
+          if (jpegIcon) {
+            const href = this.resolveUrl(baseUrl, jpegIcon.attributes.href);
+            const expectedType = "image/jpeg";
+            const iconValidationResult = await this.validateIcon(
+              href,
+              expectedType,
+              16,
+              256
+            );
+
+            result.errors.push(...iconValidationResult.errors);
+            result.successes.push(...iconValidationResult.successes);
+            result.errors.push(
+              "JPEG favicon is not recommended. But if it looks good, it's fine."
+            );
+            result.successes.push("Has a JPEG favicon");
+            return result;
           }
 
           return result;
@@ -377,7 +378,9 @@ class MetaValidatorService {
           const expectedType = "image/png";
           const iconValidationResult = await this.validateIcon(
             href,
-            expectedType
+            expectedType,
+            180,
+            180
           );
           result.errors.push(...iconValidationResult.errors);
           result.successes.push(...iconValidationResult.successes);
@@ -402,7 +405,7 @@ class MetaValidatorService {
             };
           }
           const href = this.resolveUrl(baseUrl, metaTag.attributes.content);
-          const result = await this.validateIcon(href);
+          const result = await this.validateIcon(href, "image/png", 256, 256);
           return result;
         },
       },
@@ -507,7 +510,7 @@ class MetaValidatorService {
           }
           const href = this.resolveUrl(baseUrl, icon.src);
           const expectedType = "image/png";
-          const result = await this.validateIcon(href, expectedType);
+          const result = await this.validateIcon(href, expectedType, 192, 192);
           return result;
         },
       },
@@ -527,7 +530,7 @@ class MetaValidatorService {
           }
           const href = this.resolveUrl(baseUrl, icon.src);
           const expectedType = "image/png";
-          const result = await this.validateIcon(href, expectedType);
+          const result = await this.validateIcon(href, expectedType, 512, 512);
           return result;
         },
       },
@@ -600,22 +603,21 @@ class MetaValidatorService {
     data: T,
     baseUrl: string
   ): Promise<RuleValidationResult[]> {
-    const results: RuleValidationResult[] = [];
 
-    for (const rule of rules) {
-      const { errors, successes } = await rule.check(data, baseUrl);
-      const result: RuleValidationResult = {
-        title: rule.title,
-        description: rule.description,
-        errors,
-        successes,
-      };
+    const results = await Promise.all(
+      rules.map(async (rule) => {
+        const { errors, successes } = await rule.check(data, baseUrl);
+        return {
+          title: rule.title,
+          description: rule.description,
+          errors,
+          successes,
+        };
+      })
+    );
 
-      results.push(result);
-    }
-
-    // Errors go first, then success with warnings, then success
-    const sortedResults = results.sort((a, b) => {
+    // Sort results (errors first, then success with warnings, then success)
+    return results.sort((a, b) => {
       const calculateScore = (result: RuleValidationResult) => {
         if (result.errors.length > 0 && result.successes.length === 0) return 0;
         if (result.errors.length > 0 && result.successes.length > 0) return 1;
@@ -626,42 +628,119 @@ class MetaValidatorService {
       if (aScore !== bScore) return aScore - bScore;
       return 0;
     });
+  }
 
-    return sortedResults;
+  private async getImageSize(
+    image: Blob
+  ): Promise<{ width: number; height: number }> {
+    if (!image) {
+      return { width: 0, height: 0 };
+    }
+
+    const imageUrl = URL.createObjectURL(image);
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(imageUrl);
+        resolve({ width: img.width, height: img.height });
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(imageUrl);
+        resolve({ width: 0, height: 0 });
+      };
+      img.src = imageUrl;
+    });
   }
 
   private async validateIcon(
     href: string,
-    expectedType?: string
+    expectedType?: string,
+    minSize?: number,
+    maxSize?: number
+  ): Promise<CheckResult> {
+    try {
+      const errors: string[] = [];
+      const successes: string[] = [];
+
+      const image = await fetchImage(href);
+
+      if (!image) {
+        errors.push(`Image is not accessible. The URL is probably invalid.`);
+        return { errors, successes };
+      }
+
+      successes.push(`Icon is accessible.`);
+      const mimeType = image.type;
+
+      if (expectedType) {
+        // Handle special case for .ico files which can have multiple valid MIME types
+        if (expectedType === "image/x-icon") {
+          if (["image/vnd.microsoft.icon", "image/x-icon"].includes(mimeType)) {
+            successes.push(
+              `The image type correctly matches the actual image format (${mimeType})`
+            );
+            return { errors, successes };
+          }
+        }
+
+        if (mimeType !== expectedType) {
+          errors.push(
+            `The image type does not match the actual image format. The image claims to be "${expectedType}" but is actually "${mimeType}". This can cause compatibility issues in some browsers.`
+          );
+        } else {
+          successes.push(
+            `The image type correctly matches the actual image format (${mimeType})`
+          );
+        }
+
+        if (
+          minSize &&
+          maxSize &&
+          ["image/png", "image/jpeg", "image/jpg"].includes(mimeType)
+        ) {
+          const result = await this.validateIconSize(image, minSize, maxSize);
+          errors.push(...result.errors);
+          successes.push(...result.successes);
+        }
+      }
+
+      return { errors, successes };
+    } catch {
+      return {
+        errors: ["Unable to verify icon. The URL is probably invalid."],
+        successes: [],
+      };
+    }
+  }
+
+  private async validateIconSize(
+    image: Blob,
+    minSize: number,
+    maxSize: number
   ): Promise<CheckResult> {
     const errors: string[] = [];
     const successes: string[] = [];
 
-    const mimeType = await fetchContentHeaders(href);
+    const imageSize = await this.getImageSize(image);
 
-    if (!mimeType) {
-      errors.push(`Unable to verify MIME type for icon`);
-      return { errors, successes };
+    // Check if image is not smaller than minSize
+    if (imageSize.width < minSize || imageSize.height < minSize) {
+      errors.push(
+        `Icon is too small: ${imageSize.width}x${imageSize.height}px`
+      );
     }
 
-    successes.push(`Icon is accessible.`);
+    // Check if image is not larger than 256x256
+    if (imageSize.width > maxSize || imageSize.height > maxSize) {
+      errors.push(
+        `Icon is too large: ${imageSize.width}x${imageSize.height}px`
+      );
+    }
 
-    if (expectedType) {
-      // Workaround for x-icon MIME type
-      if (expectedType === "image/x-icon") {
-        if (["image/vnd.microsoft.icon", "image/x-icon"].includes(mimeType)) {
-          successes.push(`Icon has valid MIME type "${mimeType}"`);
-          return { errors, successes };
-        }
-      }
-
-      if (mimeType !== expectedType) {
-        errors.push(
-          `Incorrect MIME type for icon. Expected "${expectedType}", got "${mimeType}"`
-        );
-      } else {
-        successes.push(`Icon has valid MIME type "${mimeType}"`);
-      }
+    if (errors.length === 0) {
+      successes.push(
+        `Icon is sized correctly: ${imageSize.width}x${imageSize.height}px`
+      );
     }
 
     return { errors, successes };
