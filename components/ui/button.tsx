@@ -27,6 +27,13 @@ const buttonVariants = cva(
         icon: "h-10 w-10",
       },
     },
+    compoundVariants: [
+      {
+        variant: "link",
+        size: "default",
+        className: "h-auto p-0",
+      },
+    ],
     defaultVariants: {
       variant: "default",
       size: "default",
@@ -41,7 +48,7 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant ='default', size = 'default', asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     return (
       <Comp

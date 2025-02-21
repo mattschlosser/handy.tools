@@ -80,12 +80,9 @@ export function useFaviconGenerator() {
     try {
       dispatch({ type: "GENERATE_FAVICON_START" });
       const { faviconSizes } = options;
+      const isSvg = file.type === "image/svg+xml";
 
       const config = [
-        {
-          size: 48,
-          name: "icon-48x48.png",
-        },
         {
           size: 256,
           name: "mstile-256x256.png",
@@ -109,10 +106,12 @@ export function useFaviconGenerator() {
         "Site Name",
         options
       );
+
       const favicon = await magickServiceRef.current.generateFavicon(
         file,
         faviconSizes
       );
+
       const icons = await Promise.all(
         config.map(async ({ size, name }) => {
           const blob = await magickServiceRef.current.generateIcon(file, size);
@@ -120,11 +119,20 @@ export function useFaviconGenerator() {
         })
       );
 
-      const archive = await zipBlob([
+      const filesToArchive = [
         ...icons,
         { name: "favicon.ico", blob: favicon },
         { name: "site.webmanifest", blob: manifestBlob },
-      ]);
+      ];
+
+      if (isSvg) {
+        filesToArchive.push({
+          name: "icon.svg",
+          blob: file,
+        });
+      }
+
+      const archive = await zipBlob(filesToArchive);
 
       dispatch({ type: "GENERATE_FAVICON_SUCCESS" });
 

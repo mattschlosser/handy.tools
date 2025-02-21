@@ -1,3 +1,4 @@
+import { convertSVGToPNG } from "@/features/favicon-generator/lib/convert-svg-to-png";
 import {
   initializeImageMagick,
   ImageMagick,
@@ -37,6 +38,18 @@ export class MagickService {
       throw new Error("ImageMagick has not been initialized.");
     }
 
+    if (file.type === "image/svg+xml") {
+      try {
+        const pngFile = await convertSVGToPNG(file, size, size);
+        return pngFile;
+      } catch (error) {
+        if (error instanceof Error) {
+          throw new Error(error.message);
+        }
+        throw new Error("Failed to convert SVG to PNG.");
+      }
+    }
+
     return new Promise(async (resolve, reject) => {
       try {
         const imageBuffer = await file.arrayBuffer();
@@ -71,7 +84,12 @@ export class MagickService {
 
     return new Promise(async (resolve, reject) => {
       try {
-        const imageBuffer = await file.arrayBuffer();
+        let imageFile = file;
+        if (file.type === "image/svg+xml") {
+          imageFile = await convertSVGToPNG(file, sizes[0], sizes[0]);
+        }
+
+        const imageBuffer = await imageFile.arrayBuffer();
         const imageData = new Uint8Array(imageBuffer);
 
         ImageMagick.read(imageData, (image) => {

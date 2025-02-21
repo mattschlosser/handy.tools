@@ -1,14 +1,19 @@
 import { CodeOptions } from ".";
 
-const jsx = (opts: CodeOptions) => `{/* Favicon in ICO format */}
-<link rel="icon" type="image/x-icon" href="/favicon.ico" />
-<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+const jsx = (
+  opts: CodeOptions,
+  isSvg: boolean
+) => `{/* Favicon in ICO format */}
+<link rel="icon" type="image/x-icon" href="/favicon.ico" ${isSvg ? 'sizes="any"' : ''} />
+
+${
+  isSvg &&
+  `{/* Standard Favicon */}
+<link rel="icon" type="image/svg+xml" href="/icon.svg" />`
+}
 
 {/* Apple Touch Icon */}
 <link rel="apple-touch-icon" type="image/png" href="/apple-touch-icon.png" />
-
-{/* Standard PNG Favicon Sizes */}
-<link rel="icon" type="image/png" sizes="48x48" href="/icon-48x48.png" />
 
 {/* Microsoft Tiles */}
 <meta name="msapplication-TileColor" content="${opts.backgroundColor}" />
@@ -21,15 +26,17 @@ const jsx = (opts: CodeOptions) => `{/* Favicon in ICO format */}
 <link rel="manifest" href="/site.webmanifest" />
 `;
 
-const html = (opts: CodeOptions) => `<!-- Favicon in ICO format -->
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+const html = (
+  opts: CodeOptions,
+  isSvg: boolean
+) => `<!-- Favicon in ICO format -->
+<link rel="icon" type="image/x-icon" href="/favicon.ico" ${isSvg ? 'sizes="any"' : ''}>
+
+${isSvg && `{/* SVG Favicon */}
+<link rel="icon" type="image/svg+xml" href="/icon.svg" />`}
 
 <!-- Apple Touch Icon -->
 <link rel="apple-touch-icon" type="image/png" href="/apple-touch-icon.png">
-
-<!-- Standard PNG Favicon Sizes -->
-<link rel="icon" type="image/png" sizes="48x48" href="/icon-48x48.png">
 
 <!-- Microsoft Tiles -->
 <meta name="msapplication-TileColor" content="${opts.backgroundColor}">
@@ -43,7 +50,8 @@ const html = (opts: CodeOptions) => `<!-- Favicon in ICO format -->
 `;
 
 const nextjs = (
-  opts: CodeOptions
+  opts: CodeOptions,
+  isSvg: boolean
 ) => `import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
@@ -54,18 +62,13 @@ export const metadata: Metadata = {
       url: "/favicon.ico",
       rel: "icon",
       type: "image/x-icon",
+      ${isSvg ? 'sizes: "any",' : ''}
     },
-    {
-      url: '/favicon.ico',
-      rel: 'shortcut icon',
-      type: 'image/x-icon'
-    },
-    {
-      url: "/icon-48x48.png",
+    ${isSvg && `{
+      url: "/icon.svg",
       rel: "icon",
-      type: "image/png",
-      sizes: "48x48",
-    },
+      type: "image/svg+xml",
+    },`}
     {
       url: "/apple-touch-icon.png",
       rel: "apple-touch-icon",
@@ -85,15 +88,16 @@ export const viewport: Viewport = {
 
 export const getInstructionCode = (
   type: "html" | "jsx" | "nextjs",
-  opts: CodeOptions
+  opts: CodeOptions,
+  isSvg: boolean
 ): string => {
   switch (type) {
     case "html":
-      return html(opts);
+      return html(opts, isSvg);
     case "jsx":
-      return jsx(opts);
+      return jsx(opts, isSvg);
     case "nextjs":
-      return nextjs(opts);
+      return nextjs(opts, isSvg);
     default:
       return "";
   }

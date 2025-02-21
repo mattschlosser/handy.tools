@@ -19,6 +19,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Instructions } from "./components/instructions";
 import { cn } from "@/lib/utils";
 import ColorPicker from "@/components/ui/color-picker";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import Link from "next/link";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { AccordionHeader } from "@radix-ui/react-accordion";
 
 const faviconSizeOptions = [16, 32, 48, 64, 128, 256, 512];
 
@@ -42,6 +51,20 @@ export default function FaviconGenerator() {
 
   const handleFileAccepted = (file: File) => {
     setFiles([file]);
+
+    if (file.type === "image/svg+xml") {
+      setOptions((prevOptions) => ({
+        ...prevOptions,
+        faviconSizes: [16, 32, 48],
+      }));
+    }
+
+    if (file.type === "image/png") {
+      setOptions((prevOptions) => ({
+        ...prevOptions,
+        faviconSizes: [16, 32, 48, 256],
+      }));
+    }
   };
 
   const handleFaviconSizesChange = (size: number) => {
@@ -78,7 +101,10 @@ export default function FaviconGenerator() {
           <div className="relative flex w-full items-center justify-center h-full md:overflow-hidden">
             {isGenerated && (
               <div className="w-full h-full">
-                <Instructions options={options} />
+                <Instructions
+                  options={options}
+                  isSvg={files[0].type === "image/svg+xml"}
+                />
               </div>
             )}
             {!isGenerated && files.length === 0 && isFaviconGeneratorReady && (
@@ -93,8 +119,9 @@ export default function FaviconGenerator() {
                   "image/jpeg": [".jpeg", ".jpg"],
                   "image/png": [".png"],
                   "image/webp": [".webp"],
+                  "image/svg+xml": [".svg"],
                 }}
-                instructions="A square PNG or SVG image. At least 512x512px size is recommended."
+                instructions="A square PNG or SVG image. At least 512x512px size is recommended. Use SVG for optimal icon quality."
                 onDropAccepted={(files) => handleFileAccepted(files[0])}
               />
             )}
@@ -130,7 +157,7 @@ export default function FaviconGenerator() {
           )}
         </div>
         {!isGenerated && (
-          <aside className="flex flex-col col-span-1 gap-4 h-full">
+          <aside className="flex flex-col col-span-1 gap-4 h-full overflow-hidden">
             <div className="flex flex-col gap-2 border bg-card p-4 rounded-md">
               <h2 className="text-xl font-semibold">Settings</h2>
               <div className="flex flex-col gap-2">
@@ -146,7 +173,9 @@ export default function FaviconGenerator() {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <h3 className="text-base font-bold">Background Color (Optional)</h3>
+                <h3 className="text-base font-bold">
+                  Background Color (Optional)
+                </h3>
                 <ColorPicker
                   value={options.backgroundColor}
                   onChange={(color) =>
@@ -157,29 +186,76 @@ export default function FaviconGenerator() {
                   }
                 />
               </div>
-              <div className="flex flex-col gap-2">
-                <h3 className="text-base font-bold">Favicon sizes</h3>
-                {faviconSizeOptions.map((size) => (
-                  <div key={size} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`faviconSize-${size}`}
-                      disabled={isDisabled}
-                      checked={options.faviconSizes.includes(size)}
-                      onCheckedChange={() => handleFaviconSizesChange(size)}
-                    />
-                    <label
-                      htmlFor={`faviconSize-${size}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      {size}x{size}px
-                    </label>
-                  </div>
-                ))}
-                <p className="text-sm text-gray-500">
-                  The selected sizes will be embedded into the generated .ico
-                  file
-                </p>
-              </div>
+              <Accordion type="single" collapsible>
+                <AccordionItem
+                  className="border-none"
+                  value="advanced-settings"
+                >
+                  <AccordionTrigger className="text-lg pb-0 font-bold">
+                    Advanced settings
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="flex flex-col gap-2 pt-2">
+                      <AccordionHeader>
+                        <h3 className="text-base font-bold">Favicon sizes</h3>
+                      </AccordionHeader>
+                      {faviconSizeOptions.map((size) => (
+                        <div key={size} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`faviconSize-${size}`}
+                            disabled={isDisabled}
+                            checked={options.faviconSizes.includes(size)}
+                            onCheckedChange={() =>
+                              handleFaviconSizesChange(size)
+                            }
+                          />
+                          <label
+                            htmlFor={`faviconSize-${size}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            {size}x{size}px
+                          </label>
+                        </div>
+                      ))}
+                      <p className="text-sm text-gray-500">
+                        The selected sizes will be embedded into the generated
+                        .ico file
+                      </p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
+
+            <div className="flex flex-col border bg-card p-4 rounded-md overflow-hidden">
+              <ScrollArea>
+                <h2 className="text-xl font-semibold pb-2">Good to know</h2>
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm">
+                    This generator creates a complete, modern favicon set
+                    including a multi-size .ico file, PWA-ready icons (192x192,
+                    512x512), Apple Touch Icon, Microsoft Tile Icon, and a web
+                    manifest with your theme colors. It follows the{" "}
+                    <Button variant="link" asChild className="h-auto p-0">
+                      <Link
+                        href="https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        best practices
+                      </Link>
+                    </Button>{" "}
+                    and avoids generating unnecessary files that are no longer
+                    required.{" "}
+                  </p>
+                  <p className="text-sm">
+                    💡 For optimal quality, upload an SVG file. SVGs scale
+                    perfectly to any size, allowing for crisp icons on
+                    high-resolution displays while keeping the .ico file size
+                    small by excluding unnecessarily large variants.
+                  </p>
+                </div>
+              </ScrollArea>
             </div>
             <AnimatePresence>
               {files && files.length > 0 && (

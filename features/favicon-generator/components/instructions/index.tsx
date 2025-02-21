@@ -11,10 +11,11 @@ export type CodeOptions = {
 
 type InstructionsProps = {
   options: CodeOptions;
+  isSvg: boolean;
 };
 
 export function Instructions(props: InstructionsProps) {
-  const { options } = props;
+  const { options, isSvg } = props;
   return (
     <div className="w-full h-full flex flex-col gap-2">
       <Tabs className="w-full h-full grow overflow-y-auto" defaultValue="html">
@@ -30,7 +31,7 @@ export function Instructions(props: InstructionsProps) {
           </p>
           <CodeHighlight
             language="markup"
-            code={getInstructionCode("html", options)}
+            code={getInstructionCode("html", options, isSvg)}
             className="w-full"
           />
         </TabsContent>
@@ -39,7 +40,7 @@ export function Instructions(props: InstructionsProps) {
             Copy the following code and paste it in your HTML {`<head>`} tag.
           </p>
           <CodeHighlight
-            code={getInstructionCode("jsx", options)}
+            code={getInstructionCode("jsx", options, isSvg)}
             language="jsx"
             className="w-full"
           />
@@ -49,7 +50,7 @@ export function Instructions(props: InstructionsProps) {
             Copy the following code and paste it in your _layout meta config.
           </p>
           <CodeHighlight
-            code={getInstructionCode("nextjs", options)}
+            code={getInstructionCode("nextjs", options, isSvg)}
             className="w-full"
           />
         </TabsContent>
