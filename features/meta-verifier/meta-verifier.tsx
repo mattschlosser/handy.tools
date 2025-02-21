@@ -2,7 +2,6 @@
 
 import Confetti from "react-confetti";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import { SiteUrlInput } from "./components/site-url-input";
 import { useMetaVerifier } from "./hooks/use-meta-verifier";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";

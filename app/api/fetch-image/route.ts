@@ -1,4 +1,4 @@
-const supportedImageExtensions = [".png", ".jpg", ".jpeg", ".webp", ".svg"];
+const supportedImageExtensions = [".png", ".jpg", ".jpeg", ".webp", ".svg", '.ico'];
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
