@@ -1,8 +1,8 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { ModeToggle } from "../ui/mode-toggle";
-import { KeyboardMusic, Menu, Pause, PocketKnifeIcon } from "lucide-react";
+import { Menu, PocketKnifeIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import {
   NavigationMenu,
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
 
 const components: { title: string; href: string; description: string }[] = [
   {
@@ -32,27 +33,14 @@ const components: { title: string; href: string; description: string }[] = [
     href: "/meta-verifier",
     description: "Verify meta tags of any website.",
   },
-  {
-    title: "SVG Minifier",
-    href: "/svg-minifier",
-    description: "Minify your SVG and export it as a React or React Native component",
-  },
+  // {
+  //   title: "SVG Minifier",
+  //   href: "/svg-minifier",
+  //   description: "Minify your SVG and export it as a React or React Native component",
+  // },
 ];
 
 export function Navigation() {
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const toggleAudio = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
 
   return (
     <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 w-full z-50">
@@ -94,8 +82,10 @@ export function Navigation() {
       </NavigationMenu>
 
       <div className="ml-auto flex gap-2">
-        <Button variant="outline" size="icon" onClick={toggleAudio}>
-          {isPlaying ? <Pause /> : <KeyboardMusic />}
+        <Button variant="outline" size="icon" asChild>
+          <Link href="https://github.com/MantasMikal/handy.tools">
+            <GitHubLogoIcon className="size-5" />
+          </Link>
         </Button>
         <ModeToggle />
 
@@ -137,11 +127,6 @@ export function Navigation() {
           </SheetContent>
         </Sheet>
       </div>
-
-      <audio className="sr-only" ref={audioRef}>
-        <source src="/music.mp3" type="audio/mpeg" />
-        Your browser does not support the audio element.
-      </audio>
     </header>
   );
 }
