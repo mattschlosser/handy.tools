@@ -140,7 +140,7 @@ export default function Compressor() {
     <div className="grow flex flex-col gap-4 h-full w-full overflow-hidden">
       <h1 className="text-2xl font-bold">Video Compressor</h1>
       <div className="grow grid items-start md:grid-cols-3 gap-4 w-full h-full mx-auto overflow-hidden">
-        <div className="flex flex-col gap-2 md:col-span-2 border p-2 rounded-md bg-card h-full min-h-[300px] max-h-[847px]">
+        <div className="relative flex flex-col gap-2 md:col-span-2 border p-2 rounded-md bg-card h-full min-h-[300px] max-h-[847px]">
           <div className="relative flex items-center justify-center h-full">
             {files.length === 0 && !isFfmpegLoading && (
               <Dropzone
@@ -208,20 +208,30 @@ export default function Compressor() {
               </div>
             )}
           </div>
-          {error && (
-            <Alert variant="destructive">
-              <ExclamationTriangleIcon className="h-5 w-5" />
-              <AlertTitle>{error.type || "Error"}</AlertTitle>
-              <AlertDescription>
-                {error.message || "An unexpected error occurred"}
-              </AlertDescription>
-            </Alert>
-          )}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                className="absolute bottom-0 left-0 p-3 w-full z-10"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ type: "spring", stiffness: 100 }}
+              >
+                <Alert className="bg-black" variant="destructive">
+                  <ExclamationTriangleIcon className="h-5 w-5" />
+                  <AlertTitle>{error.type || "Error"}</AlertTitle>
+                  <AlertDescription>
+                    {error.message || "An unexpected error occurred"}
+                  </AlertDescription>
+                </Alert>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
         <aside className="flex flex-col col-span-1 gap-4 h-full overflow-hidden">
           <div className="flex flex-col border p-1 bg-card rounded-md overflow-hidden">
-            <ScrollArea className="p-3">
-              <div className="flex flex-col gap-2 grow">
+            <ScrollArea className="p-2">
+              <div className="flex p-1 flex-col gap-2 grow">
                 <h2 className="text-xl font-semibold">Settings</h2>
                 <VideoSettings
                   isDisabled={isDisabled}
