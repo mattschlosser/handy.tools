@@ -291,7 +291,7 @@ export default function Compressor() {
           {files.length === 0 && (
             <div className="flex flex-col border bg-card p-1 rounded-md md:min-h-[150px] overflow-hidden">
               <ScrollArea className="p-3">
-                <h2 className="text-xl font-semibold pb-2">Good to know</h2>
+                <h2 className="text-xl font-semibold pb-2">💡 Good to know</h2>
                 <div className="flex flex-col gap-2">
                   <p className="text-sm">
                     The compression runs entirely in your browser. No data is
