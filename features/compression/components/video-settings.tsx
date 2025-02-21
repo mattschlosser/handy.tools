@@ -78,7 +78,7 @@ const toggleConfig: ConfigOption[] = [
     description: "String compression with loss in quality",
     options: {
       quality: 50,
-      preset: "veryfast",
+      preset: "superfast",
       fps: 30,
       scale: 1,
       generatePreview: true,
@@ -91,7 +91,7 @@ const toggleConfig: ConfigOption[] = [
     description: "Deep fried with extra crunch",
     options: {
       quality: 30,
-      preset: "veryfast",
+      preset: "superfast",
       fps: 30,
       scale: 1,
       generatePreview: true,

@@ -176,7 +176,7 @@ export class FFmpegService {
     }
 
     const fileData = await this.ffmpeg.readFile(outputFileName);
-    const data = new Uint8Array(fileData as ArrayBuffer);
+    const data = new Uint8Array(fileData as unknown as ArrayBuffer);
 
     await this.ffmpeg.deleteFile(outputFileName);
     await this.ffmpeg.unmount(inputDir);
@@ -235,7 +235,7 @@ export class FFmpegService {
     }
 
     const fileData = await this.ffmpeg.readFile(outputImageFileName);
-    const data = new Uint8Array(fileData as ArrayBuffer);
+    const data = new Uint8Array(fileData as unknown as ArrayBuffer);
 
     await this.ffmpeg.deleteFile(outputImageFileName);
     await this.ffmpeg.unmount(inputDir);

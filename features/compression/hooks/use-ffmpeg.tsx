@@ -35,7 +35,7 @@ export type FFmpegAction =
   | { type: "TRANSCODE_SUCCESS" }
   | { type: "TRANSCODE_FAILURE"; error: string }
   | { type: "ABORT" }
-  | { type: "RESET_ERROR" };
+  | { type: "TERMINATE" };
 
 /**
  * Reducer function for managing FFmpeg state transitions
@@ -49,7 +49,7 @@ export function ffmpegReducer(
 ): FFmpegState {
   switch (action.type) {
     case "LOAD_START":
-      return { ...state, isLoading: true, error: null };
+      return { ...state, isLoading: true };
     case "LOAD_SUCCESS":
       return { ...state, isLoaded: true, isLoading: false };
     case "LOAD_FAILURE":
@@ -90,8 +90,6 @@ export function ffmpegReducer(
         isTranscoding: false,
         error: { type: "Transcode Error", message: action.error },
       };
-    case "RESET_ERROR":
-      return { ...state, error: null };
 
     case "ABORT":
       return {
@@ -101,6 +99,17 @@ export function ffmpegReducer(
         isProcessingThumbnail: false,
         progress: 0,
       };
+
+    case "TERMINATE":
+      return {
+        ...state,
+        isLoaded: false,
+        isLoading: false,
+        isTranscoding: false,
+        isGeneratingPreview: false,
+        isProcessingThumbnail: false,
+      };
+
     default:
       return state;
   }
@@ -154,6 +163,18 @@ export const useFfmpeg = () => {
   }, [ffmpegServiceRef]);
 
   /**
+   * Terminates the FFmpeg service and resets the state
+   * Need to use this when the ffmpeg service crashes and then reload it
+   */
+  const terminate = useCallback(() => {
+    if (!ffmpegServiceRef.current) return;
+    const ffmpegService = ffmpegServiceRef.current;
+    ffmpegService.terminate();
+    ffmpegServiceRef.current = null;
+    dispatch({ type: "TERMINATE" });
+  }, [ffmpegServiceRef]);
+
+  /**
    * Transcodes a video file according to specified options
    * @param file - Video file to transcode
    * @param options - Transcoding configuration options
@@ -181,10 +202,11 @@ export const useFfmpeg = () => {
           type: "TRANSCODE_FAILURE",
           error: (error as Error).message,
         });
+        terminate();
         return null;
       }
     },
-    [ffmpegServiceRef]
+    [terminate, ffmpegServiceRef]
   );
 
   /**
@@ -211,10 +233,11 @@ export const useFfmpeg = () => {
           type: "PROCESS_THUMBNAIL_FAILURE",
           error: (error as Error).message,
         });
+        terminate();
         return null;
       }
     },
-    [ffmpegServiceRef]
+    [terminate, ffmpegServiceRef]
   );
 
   /**
@@ -241,14 +264,16 @@ export const useFfmpeg = () => {
           dispatch({ type: "ABORT" });
           return null;
         }
+        console.log(error);
         dispatch({
           type: "PREVIEW_FAILURE",
           error: (error as Error).message,
         });
+        terminate();
         return null;
       }
     },
-    [ffmpegServiceRef]
+    [terminate, ffmpegServiceRef]
   );
 
   /**

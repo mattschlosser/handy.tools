@@ -76,9 +76,8 @@ export default function Compressor() {
     }
 
     const result = await transcode(file, cOptions);
-
-    setShowConfetti(true);
     if (!result) return;
+    setShowConfetti(true);
     const { file: output, name } = result;
     downloadFile(output, name);
   };
