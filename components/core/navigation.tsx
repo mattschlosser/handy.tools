@@ -33,6 +33,11 @@ const components: { title: string; href: string; description: string }[] = [
     href: "/meta-verifier",
     description: "Verify meta tags of any website.",
   },
+  {
+    title: "Image Compressor",
+    href: "/image-compressor",
+    description: "Compress your images with minimal loss in quality",
+  },
   // {
   //   title: "SVG Minifier",
   //   href: "/svg-minifier",

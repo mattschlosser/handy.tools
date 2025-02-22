@@ -14,7 +14,7 @@ export interface DropzoneProps extends Omit<_DropzoneProps, "children"> {
   containerClassName?: string;
   dropZoneClassName?: string;
   filesUploaded: File[];
-  setFilesUploaded: React.Dispatch<React.SetStateAction<File[]>>;
+  setFilesUploaded: (files: File[]) => void;
   loading?: boolean;
   maxSize?: number;
   instructions?: string;
@@ -42,6 +42,7 @@ const Upload = ({ className }: { className?: string }) => (
 const Dropzone = ({
   containerClassName,
   dropZoneClassName,
+  filesUploaded,
   setFilesUploaded,
   loading,
   disabled,
@@ -55,10 +56,7 @@ const Dropzone = ({
     ...(maxSize && { maxSize }),
     ...(maxFiles && { maxFiles }),
     onDrop(acceptedFiles, fileRejections) {
-      setFilesUploaded((_filesUploaded) => [
-        ..._filesUploaded,
-        ...acceptedFiles,
-      ]);
+      setFilesUploaded([...filesUploaded, ...acceptedFiles]);
       if (fileRejections.length > 0) {
         let _errorMessage = `Could not upload ${fileRejections[0].file.name}`;
         if (fileRejections.length > 1)
