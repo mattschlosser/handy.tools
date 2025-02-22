@@ -45,7 +45,6 @@ export const metadata: Metadata = {
     "msapplication-TileColor": "#262626",
     "msapplication-TileImage": "/mstile-256x256.png",
   },
-  robots: "index, follow",
   keywords: [
     "tools",
     "developer",
