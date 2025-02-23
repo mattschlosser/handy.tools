@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import Dropzone from "@/components/ui/dropzone";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import Link from "next/link";
 import useCompressorStore from "./hooks/use-image-compressor";
 import { ImageCompressorOptions } from "@/services/image-compressor";
 import { ImagePreview } from "./components/image-preview";

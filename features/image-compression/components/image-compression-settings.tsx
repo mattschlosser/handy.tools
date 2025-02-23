@@ -45,7 +45,15 @@ export function ImageCompressionSettings({
 
       // TODO: Need better way to compress png
       case "png":
-        return null;
+        return (
+          <SliderInput
+            label="Quality"
+            min={1}
+            max={6}
+            value={options.level}
+            onChange={(value) => onOptionsChange({ ...options, level: value })}
+          />
+        );
 
       case "webp":
         return (
@@ -163,6 +171,8 @@ interface SliderInputProps {
   value: number;
   onChange: (value: number) => void;
   disabled?: boolean;
+  min?: number;
+  max?: number;
 }
 
 function SliderInput({
@@ -170,6 +180,8 @@ function SliderInput({
   value,
   onChange,
   disabled = false,
+  min = 1,
+  max = 100,
 }: SliderInputProps) {
   return (
     <div className="flex flex-col gap-2">
@@ -179,8 +191,8 @@ function SliderInput({
       <Slider
         name="quality"
         id="quality"
-        min={1}
-        max={100}
+        min={min}
+        max={max}
         step={1}
         value={[value]}
         onValueChange={([newValue]) => onChange(newValue)}

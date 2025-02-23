@@ -3,6 +3,7 @@ import * as jpeg from "@jsquash/jpeg";
 import * as jxl from "@jsquash/jxl";
 import * as png from "@jsquash/png";
 import * as webp from "@jsquash/webp";
+import * as pngOptimiser from "@jsquash/oxipng";
 
 export type ImageCompressorOutputType =
   | "avif"
@@ -29,6 +30,7 @@ export type JxlEncodeOptions = {
 
 export type PngEncodeOptions = {
   outputType: "png";
+  level: number;
 };
 
 export type WebpEncodeOptions = {
@@ -59,6 +61,7 @@ export const getDefaultsForOutputType = (
     case "png":
       return {
         outputType: "png",
+        level: 3,
       };
     case "webp":
       return {
@@ -121,7 +124,10 @@ class ImageCompressor {
       case "jxl":
         return await jxl.encode(imageData, options);
       case "png":
-        return await png.encode(imageData);
+        return await pngOptimiser.optimise(imageData, {
+          ...options,
+          level: 7 - options.level, // Reverse the level because the slider is inverted
+        });
       case "webp":
         return await webp.encode(imageData, options);
       default:

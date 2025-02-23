@@ -182,10 +182,22 @@
   dependencies:
     wasm-feature-detect "^1.5.1"
 
+"@jsquash/oxipng@^2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@jsquash/oxipng/-/oxipng-2.3.0.tgz#49095dd5b7d71ead94e4e80d627b7f0f453493ef"
+  integrity sha512-aQ8wiEp6ztlTMXc+RMt/CG8crU3mEHDU+h+JYkIi6ctMhlh8+Ltj5XwQFfBuyzKYrp8NxaFW80Dp824bqjr+zA==
+  dependencies:
+    wasm-feature-detect "^1.2.11"
+
 "@jsquash/png@^3.0.1":
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/@jsquash/png/-/png-3.0.1.tgz#dc4c775e2fda3abd5d2f6e7971f6ce0c11b6a952"
   integrity sha512-Bnvv93Y5LL92cuk2r2gpV+9JKuDo2/w7bOODw1iPxk8VARknky0sS1tSDgMosUdhNb4CdMlcCm3TMzTaqa3zZw==
+
+"@jsquash/resize@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@jsquash/resize/-/resize-2.1.0.tgz#af3751e9f4702512d9a03200521c8e69b54ae082"
+  integrity sha512-UxF45pe5a84GrleHichsnGHyFAJhOu4Ms9L1UQYXhhmDifRm4U3pMEzgly+m3xDe+h4XZyDlpr9f8FBB1LZ+LA==
 
 "@jsquash/webp@^1.4.0":
   version "1.4.0"
