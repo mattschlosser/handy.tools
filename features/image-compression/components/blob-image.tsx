@@ -1,5 +1,5 @@
 import Image from "next/image";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 const fileOrBlobToUrl = (src?: Blob | File | null) => {
   if (!src) return null;
@@ -14,21 +14,24 @@ const fileOrBlobToUrl = (src?: Blob | File | null) => {
 
 export const BlobImage = (props: { src: Blob | File }) => {
   const { src } = props;
-
-  const blobUrl = React.useMemo(() => fileOrBlobToUrl(src), [src]);
+  const [image, setImage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (blobUrl) {
-      return () => URL.revokeObjectURL(blobUrl);
-    }
-  }, [blobUrl]);
+    const url = fileOrBlobToUrl(src);
+    setImage(url);
+    return () => {
+      if (url) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, [src]);
 
-  if (!blobUrl) return null;
+  if (!image) return null;
 
   return (
     <Image
       className="w-full h-full object-contain"
-      src={blobUrl}
+      src={image}
       alt="Image"
       fill
     />

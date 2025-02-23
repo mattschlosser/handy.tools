@@ -24,6 +24,11 @@ const components: { title: string; href: string; description: string }[] = [
       "Compress your videos with minimal loss in quality using ffmpeg.",
   },
   {
+    title: "Image Compressor",
+    href: "/image-compressor",
+    description: "Compress your images with minimal loss in quality",
+  },
+  {
     title: "Favicon Generator",
     href: "/favicon-generator",
     description: "Generate favicons for your website with ease.",
@@ -32,11 +37,6 @@ const components: { title: string; href: string; description: string }[] = [
     title: "Meta Tags Verifier",
     href: "/meta-verifier",
     description: "Verify meta tags of any website.",
-  },
-  {
-    title: "Image Compressor",
-    href: "/image-compressor",
-    description: "Compress your images with minimal loss in quality",
   },
   // {
   //   title: "SVG Minifier",

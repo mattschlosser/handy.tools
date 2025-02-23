@@ -25,6 +25,9 @@ export default function ImageCompressor() {
   const files = useCompressorStore((s) => s.files);
   const activeImage = useCompressorStore((s) => s.activeImage);
   const isAutoCompressing = useCompressorStore((s) => s.isAutoCompressing);
+  const setIsAutoCompressing = useCompressorStore(
+    (s) => s.setIsAutoCompressing
+  );
 
   const debouncedProcessAll = () => {
     if (!isAutoCompressing) return;
@@ -52,8 +55,14 @@ export default function ImageCompressor() {
   const handleDropAccepted = async (newFiles: File[]) => {
     setFiles(newFiles);
 
-    // TODO: Be smart and do this based on file size
-    if (!isAutoCompressing) return;
+    const totalSize = newFiles.reduce((acc, file) => acc + file.size, 0);
+    const totalSizeInMB = totalSize / (1024 * 1024);
+
+    if (isAutoCompressing && totalSizeInMB > 50) {
+      setIsAutoCompressing(false);
+      return;
+    }
+
     await processAll();
   };
 
@@ -68,7 +77,7 @@ export default function ImageCompressor() {
                 containerClassName="w-full h-full"
                 dropZoneClassName="w-full h-full"
                 filesUploaded={files}
-                setFilesUploaded={(files: File[]) => setFiles(files)}
+                setFilesUploaded={handleDropAccepted}
                 onDropAccepted={handleDropAccepted}
                 maxSize={1024 * 1024 * 1024 * 2}
                 accept={{

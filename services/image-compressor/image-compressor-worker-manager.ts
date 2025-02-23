@@ -90,7 +90,6 @@ export class ImageCompressorWorkerManager {
     if (this.workers.length > 0) return;
 
     for (let i = 0; i < this.workerCount; i++) {
-      console.log("Initializing worker", i);
       const worker = new Worker(
         new URL("./image-compressor.worker.ts", import.meta.url),
         { type: "module" }

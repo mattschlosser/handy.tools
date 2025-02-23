@@ -46,7 +46,6 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     case "ADD_TASK": {
       const task = payload.task;
       if (!task) return;
-
       try {
         const { fileData, options } = task;
         const compressedBlob = await imageCompressor.compressImage(
