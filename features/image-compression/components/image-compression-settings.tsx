@@ -8,7 +8,7 @@ import {
   getDefaultsForOutputType,
   ImageCompressorOptions,
   ImageCompressorOutputType,
-} from "@/services/image-compressor";
+} from "@/services/image-compressor/image-compressor";
 
 interface ImageCompressionSettingsProps {
   options: ImageCompressorOptions;

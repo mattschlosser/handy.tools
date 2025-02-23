@@ -7,7 +7,7 @@ import Dropzone from "@/components/ui/dropzone";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import useCompressorStore from "./hooks/use-image-compressor";
-import { ImageCompressorOptions } from "@/services/image-compressor";
+import { ImageCompressorOptions } from "@/services/image-compressor/image-compressor";
 import { ImagePreview } from "./components/image-preview";
 import { ImageCompressionSettings } from "./components/image-compression-settings";
 import { Progress } from "@/components/ui/progress";

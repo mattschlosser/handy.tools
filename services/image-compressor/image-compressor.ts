@@ -80,14 +80,19 @@ export type ImageCompressorOptions =
   | PngEncodeOptions
   | WebpEncodeOptions;
 
+export type ImageCompressorInput = {
+  name: string;
+  type: string;
+  arrayBuffer: ArrayBuffer;
+};
+
 class ImageCompressor {
-  public async compressImage(image: File, options: ImageCompressorOptions) {
+  public async compressImage(image: ImageCompressorInput, options: ImageCompressorOptions) {
     try {
-      const fileBuffer = await image.arrayBuffer();
       const sourceType = image.name.endsWith("jxl")
         ? "jxl"
         : image.type.replace("image/", "");
-      const imageData = await this.decode(sourceType, fileBuffer);
+      const imageData = await this.decode(sourceType, image.arrayBuffer);
       const compressedImage = await this.encode(imageData, options);
       const imageBlob = new Blob([compressedImage], {
         type: `image/${options.outputType}`,
