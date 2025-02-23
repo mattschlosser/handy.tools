@@ -130,17 +130,6 @@ export default function ImageCompressor() {
           )}
         </div>
         <aside className="flex flex-col col-span-1 gap-4 h-full overflow-hidden">
-          <div className="flex flex-col p-1 border bg-card rounded-md overflow-hidden">
-            <ScrollArea>
-              <div className="flex p-3 flex-col gap-2 grow">
-                <h2 className="text-xl font-semibold">Default Settings</h2>
-                <DefaultCompressionSettings
-                  onOptionsChange={debouncedProcessAll}
-                />
-              </div>
-            </ScrollArea>
-          </div>
-
           {files.length > 1 && activeImage && (
             <div className="flex flex-col p-1 border bg-card rounded-md overflow-hidden">
               <ScrollArea>
@@ -156,6 +145,16 @@ export default function ImageCompressor() {
               </ScrollArea>
             </div>
           )}
+          <div className="flex flex-col p-1 border bg-card rounded-md overflow-hidden">
+            <ScrollArea>
+              <div className="flex p-3 flex-col gap-2 grow">
+                <h2 className="text-xl font-semibold">Default Settings</h2>
+                <DefaultCompressionSettings
+                  onOptionsChange={debouncedProcessAll}
+                />
+              </div>
+            </ScrollArea>
+          </div>
           {files.length > 0 && (
             <div className="flex flex-col gap-2 border bg-card p-4 rounded-md">
               <h2 className="text-xl font-semibold">Details</h2>
