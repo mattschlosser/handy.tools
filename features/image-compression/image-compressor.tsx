@@ -167,7 +167,7 @@ export default function ImageCompressor() {
                 <div className="flex flex-col gap-2">
                   <p className="text-sm">
                     The compression runs entirely in your browser. No data is
-                    stored on the server. Because of this, there are some
+                    stored on the server. Because of this, there are no
                     limitations of speed and file size.
                   </p>
                 </div>
