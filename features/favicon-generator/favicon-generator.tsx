@@ -114,7 +114,6 @@ export default function FaviconGenerator() {
                 filesUploaded={files}
                 setFilesUploaded={setFiles}
                 maxFiles={1}
-                maxSize={1024 * 1024 * 2}
                 accept={{
                   "image/jpeg": [".jpeg", ".jpg"],
                   "image/png": [".png"],

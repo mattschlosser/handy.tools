@@ -79,7 +79,6 @@ export default function ImageCompressor() {
                 filesUploaded={files}
                 setFilesUploaded={handleDropAccepted}
                 onDropAccepted={handleDropAccepted}
-                maxSize={1024 * 1024 * 1024 * 2}
                 accept={{
                   "image/jpeg": [".jpg", ".jpeg"],
                   "image/png": [".png"],
