@@ -16,7 +16,6 @@ export interface DropzoneProps extends Omit<_DropzoneProps, "children"> {
   filesUploaded: File[];
   setFilesUploaded: (files: File[]) => void;
   loading?: boolean;
-  maxSize?: number;
   instructions?: string;
 }
 
@@ -46,14 +45,12 @@ const Dropzone = ({
   setFilesUploaded,
   loading,
   disabled,
-  maxSize,
   maxFiles,
   instructions,
   ...props
 }: DropzoneProps) => {
   const dropzone = useDropzone({
     ...props,
-    ...(maxSize && { maxSize }),
     ...(maxFiles && { maxFiles }),
     onDrop(acceptedFiles, fileRejections) {
       setFilesUploaded([...filesUploaded, ...acceptedFiles]);
@@ -92,11 +89,6 @@ const Dropzone = ({
             {instructions && (
               <div className="text-center text-xs text-gray-400 font-medium">
                 {instructions}
-              </div>
-            )}
-            {maxSize && (
-              <div className="text-xs text-gray-400 font-medium">
-                Max. file size: {(maxSize / (1024 * 1024)).toFixed(2)} MB
               </div>
             )}
           </div>
