@@ -104,7 +104,7 @@ export class FFmpegService {
       preset,
     } = options;
 
-    const args = ["-threads", "2"];
+    const args = ["-threads", `${navigator.hardwareConcurrency || 2}`];
 
     if (removeAudio) {
       args.push("-an");
