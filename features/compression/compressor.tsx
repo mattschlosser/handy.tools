@@ -235,6 +235,7 @@ export default function Compressor() {
                 <VideoSettings
                   isDisabled={isDisabled}
                   cOptions={cOptions}
+                  videoMetadata={videoMetadata}
                   onOptionsChange={handleOptionsChange}
                 />
               </div>

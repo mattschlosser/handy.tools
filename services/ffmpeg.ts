@@ -22,6 +22,8 @@ export type TranscodeOptions = {
   quality?: number;
   format?: string;
   scale?: number;
+  width?: number;
+  height?: number;
   preset?: PresetOptions;
   fps?: number;
   removeAudio?: boolean;
@@ -121,6 +123,10 @@ export class FFmpegService {
     if (scale && scale < 1) {
       const scaledWidth = `round(iw*${scale}/2)*2`;
       args.push("-vf", `scale=${scaledWidth}:-2`);
+    } else if (options.width && options.height) {
+      args.push("-vf", `scale=${options.width}:${options.height}`);
+    } else if (options.width) {
+      args.push("-vf", `scale=${options.width}:-2`);
     }
 
     if (preset) {

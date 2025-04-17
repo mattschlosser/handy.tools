@@ -31,7 +31,8 @@ export async function getVideoMetadata(file: File): Promise<VideoMetadata> {
       });
     };
 
-    video.onerror = () => {
+    video.onerror = (e) => {
+      console.log(e);
       reject("Error loading video");
     };
 

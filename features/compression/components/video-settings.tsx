@@ -20,21 +20,24 @@ import {
   LucideIcon,
   RocketIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { VideoMetadata } from "../lib/get-video-metadata";
 
 export type CompressionOptions = {
   quality: number;
   preset: (typeof presets)[number]["value"];
   fps: number;
-  scale: number;
+  scale?: number;
+  width?: number;
+  height?: number;
   removeAudio?: boolean;
   generatePreview?: boolean;
   previewDuration?: number;
 };
 
 type BasicPresets = "basic" | "super" | "ultra" | "cooked";
-type TabOptions = "basic" | "advanced";
+type TabOptions = "basic" | "advanced" | "super";
 
 type ConfigOption = {
   value: string;
@@ -135,16 +138,32 @@ const MotionTabsContent = motion.create(TabsContent);
 interface VideoSettingsProps {
   isDisabled: boolean;
   cOptions: CompressionOptions;
+  videoMetadata?: VideoMetadata | null;
   onOptionsChange: (options: CompressionOptions) => void;
 }
 
 export function VideoSettings({
   isDisabled,
   cOptions,
+  videoMetadata,
   onOptionsChange,
 }: VideoSettingsProps) {
   const [activeTab, setActiveTab] = useState<TabOptions>("basic");
   const [basicPreset, setBasicPreset] = useState<BasicPresets>("super");
+  const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
+
+  useEffect(() => {
+    if (videoMetadata && activeTab === "super") {
+      if (!videoMetadata.width || !videoMetadata.height) return;
+      // Set the width and height to the video metadata
+      const { width, height } = videoMetadata;
+      onOptionsChange({
+        ...cOptions,
+        width: width || 1920,
+        height: height || 1080,
+      });
+    }
+  }, [videoMetadata, activeTab]);
 
   const handleQualityChange = (value: number) => {
     onOptionsChange({
@@ -158,6 +177,32 @@ export function VideoSettings({
       ...cOptions,
       scale: value,
     });
+  };
+
+  const handleWidthChange = (value: number) => {
+    onOptionsChange({
+      ...cOptions,
+      width: value,
+      height: maintainAspectRatio ? Math.round(value * (videoMetadata?.height || 1080) / (videoMetadata?.width || 1920)) : cOptions.height,
+    });
+  };
+
+  const handleHeightChange = (value: number) => {
+    onOptionsChange({
+      ...cOptions,
+      height: value,
+      width: maintainAspectRatio ? Math.round(value * (videoMetadata?.width || 1920) / (videoMetadata?.height || 1080)) : cOptions.width,
+    });
+  }
+
+  const handleRatioChange = (value: boolean) => {
+    setMaintainAspectRatio(value);
+    if (value) {
+      onOptionsChange({
+        ...cOptions,
+        height: Math.round((cOptions.width || 1920) * (videoMetadata?.width || 1) / (videoMetadata?.height || 1)),
+      });
+    }
   };
 
   const handlePresetChange = (value: string) => {
@@ -215,9 +260,10 @@ export function VideoSettings({
       className="w-full"
       onValueChange={(value) => setActiveTab(value as TabOptions)}
     >
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="basic">Basic</TabsTrigger>
         <TabsTrigger value="advanced">Advanced</TabsTrigger>
+        <TabsTrigger value="super">Super</TabsTrigger>
       </TabsList>
       <AnimatePresence initial={false}>
         {activeTab === "basic" && (
@@ -318,14 +364,204 @@ export function VideoSettings({
                 min={0.01}
                 max={1}
                 step={0.01}
-                defaultValue={[cOptions.scale]}
-                value={[cOptions.scale]}
+                defaultValue={[cOptions.scale || 1]}
+                value={[cOptions.scale || 1]}
                 onValueChange={(value) => handleScaleChange(value[0])}
               />
               <p className="text-sm text-gray-500">
                 This will shrink the video resolution. Can greatly reduce file
                 size.
               </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2">
+                <Label className="text-base font-bold" htmlFor="preset">
+                  Preset
+                </Label>
+                <Select
+                  value={cOptions.preset}
+                  disabled={isDisabled}
+                  onValueChange={(value) => handlePresetChange(value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {presets.map((preset) => (
+                      <SelectItem key={preset.value} value={preset.value}>
+                        {preset.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-sm text-gray-500">
+                Compression speed. A slower preset will provide slightly better
+                quality, but will take longer to process and potential crash the compression. Faster values are
+                recommended for most cases.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label className="text-base font-bold" htmlFor="fps">
+                FPS
+              </Label>
+              <Input
+                disabled={isDisabled}
+                onChange={(e) => handleFpsChange(parseInt(e.target.value))}
+                value={cOptions.fps}
+                type="number"
+                id="fps"
+                max={120}
+              />
+              <p className="text-sm text-gray-500">
+                Frames per second. Lower FPS will result in smaller file size
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <h3 className="text-base font-bold">Audio</h3>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="removeAudio"
+                  checked={cOptions.removeAudio}
+                  disabled={isDisabled}
+                  onCheckedChange={(checked) => handleAudioChange(!!checked)}
+                />
+                <label
+                  htmlFor="removeAudio"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Remove soundtrack
+                </label>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <h3 className="text-base font-bold">Preview</h3>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="generatePreview"
+                  disabled={isDisabled}
+                  checked={cOptions.generatePreview}
+                  onCheckedChange={(checked) =>
+                    handlePreviewEnabledChange(!!checked)
+                  }
+                />
+                <label
+                  htmlFor="generatePreview"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Automatically Generate previews
+                </label>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label className="text-base font-bold" htmlFor="previewDuration">
+                Preview Duration (seconds)
+              </Label>
+              <Input
+                disabled={isDisabled}
+                onChange={(e) =>
+                  handlePreviewDurationChange(parseInt(e.target.value))
+                }
+                value={cOptions.previewDuration}
+                type="number"
+                min={1}
+                id="previewDuration"
+              />
+              <p className="text-sm text-gray-500">
+                Will change the duration of the preview video. Will provide
+                better estimate of the output file size.
+              </p>
+            </div>
+          </MotionTabsContent>
+        )}
+        {activeTab === "super" && (
+          <MotionTabsContent
+            key="super"
+            className="flex flex-col gap-4"
+            value="super"
+            initial={{
+              opacity: 0,
+              translateX: -100,
+            }}
+            animate={{ opacity: 1, translateX: 0 }}
+            exit={{
+              opacity: 0,
+              translateX: 100,
+            }}
+          >
+            <div className="flex flex-col gap-2">
+              <Label className="text-base font-bold" htmlFor="quality">
+                Quality
+              </Label>
+              <Slider
+                disabled={isDisabled}
+                name="quality"
+                id="quality"
+                min={1}
+                max={100}
+                step={1}
+                defaultValue={[cOptions.quality]}
+                value={[cOptions.quality]}
+                onValueChange={(value) => {
+                  handleQualityChange(value[0]);
+                }}
+              />
+              <p className="text-sm text-gray-500">
+                Lower quality will result in smaller file size. At maximum
+                quality the video will still be compressed with minimum impact
+                on quality.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label className="text-base font-bold" htmlFor="scale">
+                Resolution
+              </Label>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-base mb-2 block" htmlFor="width">
+                    Width (px) 
+                  </Label>
+                  <Input
+                    disabled={isDisabled}
+                    onChange={(e) => handleWidthChange(parseInt(e.target.value))}
+                    value={cOptions.width}
+                    defaultValue={1920}
+                    required
+                    type="number"
+                    id="width"
+                    min={1}
+                  />
+                </div>
+                <div>
+                  <Label className="text-base mb-2 block" htmlFor="height">
+                    Height (px)
+                  </Label>
+                  <Input
+                    disabled={isDisabled}
+                    onChange={(e) => handleHeightChange(parseInt(e.target.value))}
+                    value={cOptions.height}
+                    defaultValue={1080}
+                    type="number"
+                    id="height"
+                    min={1}
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="ratio"
+                  disabled={isDisabled}
+                  checked={maintainAspectRatio}
+                  onCheckedChange={(checked) => handleRatioChange(!!checked)}
+                />
+                <label
+                  htmlFor="ratio"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Maintain Aspect Ratio
+                </label>
+              </div>
             </div>
             <div className="flex flex-col gap-2">
               <div className="flex flex-col gap-2">

@@ -10,6 +10,8 @@ interface VideoMetadata {
 
 interface COptions {
   scale?: number;
+  width?: number;
+  height?: number;
 }
 
 interface VideoMetadataDisplayProps {
@@ -33,14 +35,14 @@ export function VideoMetadataDisplay({
       {videoMetadata?.width && videoMetadata?.height && (
         <div className="text-sm text-foreground">
           <b>Resolution:</b>{" "}
-          {cOptions.scale && cOptions.scale !== 1 ? (
+          {(cOptions.scale && cOptions.scale !== 1)  || (cOptions.width && cOptions.height) ? (
             <>
               <p className="inline-block line-through">
                 {videoMetadata.width}x${videoMetadata.height}
               </p>{" "}
               <span>
-                {(videoMetadata.width * cOptions.scale).toFixed(0)}x
-                {(videoMetadata.height * cOptions.scale).toFixed(0)}
+                {(cOptions.width || (videoMetadata.width * cOptions.scale!)).toFixed(0)}x
+                {(cOptions.height || (videoMetadata.height * cOptions.scale!)).toFixed(0)}
               </span>
             </>
           ) : (
