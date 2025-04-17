@@ -88,7 +88,7 @@ export function Navigation() {
 
       <div className="ml-auto flex gap-2">
         <Button variant="outline" size="icon" asChild>
-          <Link target="_blank" rel="noopener noreferrer" href="https://github.com/MantasMikal/handy.tools">
+          <Link target="_blank" rel="noopener noreferrer" href="https://github.com/mattschlosser/handy.tools">
             <GitHubLogoIcon className="size-5" />
           </Link>
         </Button>
