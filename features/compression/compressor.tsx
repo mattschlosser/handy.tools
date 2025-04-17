@@ -75,7 +75,14 @@ export default function Compressor() {
       return;
     }
 
+    /** Listener prevent's accidental page close during transcoding */
+    const listener = (event: Event) => {
+      event.preventDefault();
+      event.returnValue = true;
+    }
+    window.addEventListener("beforeunload", listener);
     const result = await transcode(file, cOptions);
+    window.removeEventListener("beforeunload", listener);
     if (!result) return;
     setShowConfetti(true);
     const { file: output, name } = result;
