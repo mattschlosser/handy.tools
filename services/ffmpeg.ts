@@ -6,6 +6,7 @@ import { qualityToCrf } from "@/features/compression/lib/quality-to-crf";
 import { FFmpeg, FFFSType } from "@ffmpeg/ffmpeg";
 import { toBlobURL } from "@ffmpeg/util";
 import { secondsToTimestamp } from "@/features/compression/lib/seconds-to-timestamp";
+import { timestampToSeconds } from "@/features/compression/lib/timestamp-to-seconds";
 
 export type PresetOptions =
   | "ultrafast"
@@ -94,7 +95,26 @@ export class FFmpegService {
       ),
     });
   }
+  
 
+  /**
+   * 
+   * @returns Timestamp of duration if set in options, in format HH:mm:ss
+   */
+  calculateDurationFromOptions(options: TranscodeOptions): string | null {
+    const { trimStart, trimEnd } = options;
+    if (trimEnd) {
+      // convert trim end relative to trim start, which is possibly ss, mm:ss, or  HH:mm:ss, if trim start exists
+      if (trimStart) {
+        const startSeocnds = timestampToSeconds(trimStart);
+        const endSeconds = timestampToSeconds(trimEnd);
+        const duration = endSeconds - startSeocnds;
+        return secondsToTimestamp(Math.max(0, duration));
+      }
+      return trimEnd;
+    }
+    return null;
+  }
 
   /**
    * Converts transcode options into FFmpeg input arguments
@@ -109,18 +129,9 @@ export class FFmpegService {
       args.push("-ss", trimStart);
     }
 
-    if (trimEnd) {
-      // convert trim end relative to trim start, which is possibly ss, mm:ss, or  HH:mm:ss, if trim start exists
-      if (trimStart) {
-        const [h, m, s] = trimStart.split(":").map(Number);
-        const startInSeconds = h * 3600 + m * 60 + s;
-        const [h2, m2, s2] = trimEnd.split(":").map(Number);
-        const endInSeconds = h2 * 3600 + m2 * 60 + s2;
-        const duration = endInSeconds - startInSeconds;
-        args.push("-t", secondsToTimestamp(duration));
-      } else {
-        args.push("-to", trimEnd);
-      }
+    const duration = this.calculateDurationFromOptions(options);
+    if (duration) {
+      args.push("-t", duration);
     }
 
     return args;
@@ -308,9 +319,12 @@ export class FFmpegService {
     const { duration: totalDuration, sizeMB: originalSizeMB } =
       await getVideoMetadata(file);
 
+    const trimDurationTimestmap = this.calculateDurationFromOptions(options);
+    const trimDuartionSeconds = trimDurationTimestmap ? timestampToSeconds(trimDurationTimestmap) : 0;
+
     const sampleDuration = Math.min(
       options.previewDuration || DEFAULT_PREVIEW_DURATION,
-      totalDuration
+      trimDuartionSeconds || totalDuration
     );
     const sampleOutputFileName = `sample_output-${getRandomId()}.mp4`;
     const originalOutputFileName = `original_output-${getRandomId()}.mp4`;
@@ -341,7 +355,7 @@ export class FFmpegService {
       this.ffmpeg.exec(
         [
           "-ss",
-          "0",
+          options?.trimStart ?? "0",
           "-i",
           `${inputDir}/${file.name}`,
           "-t",
@@ -368,7 +382,9 @@ export class FFmpegService {
     const originalOutputSize = (originalOutputData as Uint8Array).length;
 
     const compressionRatio = sampleOutputSize / originalOutputSize;
-    const estimatedSizeMB = originalSizeMB * compressionRatio;
+    const durationRatio = trimDurationTimestmap ? trimDuartionSeconds / totalDuration : 1;
+
+    const estimatedSizeMB = originalSizeMB * compressionRatio * durationRatio;
 
     // Clean up
     await this.ffmpeg.deleteFile(sampleOutputFileName);
