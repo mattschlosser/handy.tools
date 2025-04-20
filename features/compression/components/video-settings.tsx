@@ -175,6 +175,12 @@ export function VideoSettings({
         ...cOptions,
         trimEnd: secondsToTimestamp(videoMetadata.duration),
       });
+    } else if (!trimVideo) {
+      onOptionsChange({
+        ...cOptions,
+        trimStart: undefined,
+        trimEnd: undefined,
+      });
     }
   }, [trimVideo, videoMetadata]);
 
