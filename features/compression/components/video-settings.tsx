@@ -23,6 +23,7 @@ import {
 import { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { VideoMetadata } from "../lib/get-video-metadata";
+import { secondsToTimestamp } from "../lib/seconds-to-timestamp";
 
 export type CompressionOptions = {
   quality: number;
@@ -34,6 +35,8 @@ export type CompressionOptions = {
   removeAudio?: boolean;
   generatePreview?: boolean;
   previewDuration?: number;
+  trimStart?: string;
+  trimEnd?: string;
 };
 
 type BasicPresets = "basic" | "super" | "ultra" | "cooked";
@@ -151,6 +154,7 @@ export function VideoSettings({
   const [activeTab, setActiveTab] = useState<TabOptions>("basic");
   const [basicPreset, setBasicPreset] = useState<BasicPresets>("super");
   const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
+  const [trimVideo, setTrimVideo] = useState(false);
 
   useEffect(() => {
     if (videoMetadata && activeTab === "super") {
@@ -164,6 +168,15 @@ export function VideoSettings({
       });
     }
   }, [videoMetadata, activeTab]);
+
+  useEffect(() => {
+    if (trimVideo && videoMetadata?.duration) {
+      onOptionsChange({
+        ...cOptions,
+        trimEnd: secondsToTimestamp(videoMetadata.duration),
+      });
+    }
+  }, [trimVideo, videoMetadata]);
 
   const handleQualityChange = (value: number) => {
     onOptionsChange({
@@ -227,6 +240,14 @@ export function VideoSettings({
       removeAudio: value,
     });
   };
+
+  const handleTrimVideoChange = (value: boolean) => {
+    setTrimVideo(value);
+    onOptionsChange({
+      ...cOptions,
+      trimStart: value ? "00:00:00" : undefined,
+    });
+  }
 
   const handlePreviewDurationChange = (value: number) => {
     onOptionsChange({
@@ -519,7 +540,7 @@ export function VideoSettings({
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label className="text-base mb-2 block" htmlFor="width">
-                    Width (px) 
+                    Width (px)
                   </Label>
                   <Input
                     disabled={isDisabled}
@@ -547,7 +568,7 @@ export function VideoSettings({
                   />
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="ratio"
@@ -606,6 +627,59 @@ export function VideoSettings({
               <p className="text-sm text-gray-500">
                 Frames per second. Lower FPS will result in smaller file size
               </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="trimVideo"
+                  checked={trimVideo}
+                  disabled={isDisabled}
+                  onCheckedChange={(checked) => handleTrimVideoChange(!!checked)}
+                />
+                <label
+                  htmlFor="trimVideo"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Trim Video
+                </label>
+              </div>
+            {trimVideo && (
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-base font-bold" htmlFor="trimStart">
+                    Trim Start (hh:mm:ss)
+                  </Label>
+                  <Input
+                    disabled={isDisabled}
+                    onChange={(e) =>
+                      onOptionsChange({
+                        ...cOptions,
+                        trimStart: e.target.value,
+                      })
+                    }
+                    value={cOptions.trimStart}
+                    type="string"
+                    id="trimStart"
+                  />
+                </div>
+                <div>
+                  <Label className="text-base font-bold" htmlFor="trimEnd">
+                    Trim End (hh:mm:ss)
+                  </Label>
+                  <Input
+                    disabled={isDisabled}
+                    onChange={(e) =>
+                      onOptionsChange({
+                        ...cOptions,
+                        trimEnd: e.target.value,
+                      })
+                    }
+                    value={cOptions.trimEnd}
+                    type="string"
+                    id="trimEnd"
+                  />
+                </div>
+              </div>)}
             </div>
             <div className="flex flex-col gap-2">
               <h3 className="text-base font-bold">Audio</h3>

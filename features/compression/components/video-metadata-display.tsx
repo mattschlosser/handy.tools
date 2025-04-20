@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { secondsToTimestamp } from "../lib/seconds-to-timestamp";
+import { timestampToSeconds } from "../lib/timestamp-to-seconds";
 
 interface VideoMetadata {
   duration?: number;
@@ -12,6 +13,9 @@ interface COptions {
   scale?: number;
   width?: number;
   height?: number;
+  /** hh:mm:ss */
+  trimStart?: string;
+  trimEnd?: string;
 }
 
 interface VideoMetadataDisplayProps {
@@ -25,11 +29,35 @@ export function VideoMetadataDisplay({
   cOptions,
   estimatedSize,
 }: VideoMetadataDisplayProps) {
+
+  const calculateVideoDuration = (duration: number) => {
+    if (cOptions.trimStart && cOptions.trimEnd) {
+      return secondsToTimestamp(
+        timestampToSeconds(cOptions.trimEnd) -
+          timestampToSeconds(cOptions.trimStart)
+      );
+    }
+    if (cOptions.trimEnd) {
+      return cOptions.trimEnd;
+    }
+    if (cOptions.trimStart) {
+      return secondsToTimestamp(
+        duration - timestampToSeconds(cOptions.trimStart)
+      );
+    }
+    return secondsToTimestamp(duration);
+  }
+
+  const duration = useMemo(
+    () => videoMetadata?.duration && calculateVideoDuration(videoMetadata.duration), 
+    [videoMetadata.duration, cOptions.trimStart, cOptions.trimEnd]
+  );
+
   return (
     <div className="flex flex-col gap-1">
-      {videoMetadata?.duration && (
+      {duration && (
         <p className="text-sm text-foreground">
-          <b>Video Duration:</b> {secondsToTimestamp(videoMetadata.duration)}
+          <b>Video Duration:</b> {duration}
         </p>
       )}
       {videoMetadata?.width && videoMetadata?.height && (

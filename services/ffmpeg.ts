@@ -5,6 +5,7 @@ import { getVideoMetadata } from "@/features/compression/lib/get-video-metadata"
 import { qualityToCrf } from "@/features/compression/lib/quality-to-crf";
 import { FFmpeg, FFFSType } from "@ffmpeg/ffmpeg";
 import { toBlobURL } from "@ffmpeg/util";
+import { secondsToTimestamp } from "@/features/compression/lib/seconds-to-timestamp";
 
 export type PresetOptions =
   | "ultrafast"
@@ -24,6 +25,11 @@ export type TranscodeOptions = {
   scale?: number;
   width?: number;
   height?: number;
+  /**
+   * Where to start the video from, Format: hh:mm:ss
+   */
+  trimStart?: string;
+  trimEnd?: string;
   preset?: PresetOptions;
   fps?: number;
   removeAudio?: boolean;
@@ -87,6 +93,37 @@ export class FFmpegService {
         "text/javascript"
       ),
     });
+  }
+
+
+  /**
+   * Converts transcode options into FFmpeg input arguments
+   * @param options - Transcoding options including codec, quality, scale, etc.
+   * @returns Array of FFmpeg input arguments
+   */
+  transcodeOptionsToInputArgs(options: TranscodeOptions) {
+    const { trimStart, trimEnd } = options;
+    const args: string[] = [];
+
+    if (trimStart) {
+      args.push("-ss", trimStart);
+    }
+
+    if (trimEnd) {
+      // convert trim end relative to trim start, which is possibly ss, mm:ss, or  HH:mm:ss, if trim start exists
+      if (trimStart) {
+        const [h, m, s] = trimStart.split(":").map(Number);
+        const startInSeconds = h * 3600 + m * 60 + s;
+        const [h2, m2, s2] = trimEnd.split(":").map(Number);
+        const endInSeconds = h2 * 3600 + m2 * 60 + s2;
+        const duration = endInSeconds - startInSeconds;
+        args.push("-t", secondsToTimestamp(duration));
+      } else {
+        args.push("-to", trimEnd);
+      }
+    }
+
+    return args;
   }
 
   /**
@@ -167,10 +204,11 @@ export class FFmpegService {
 
     await this.ffmpeg.mount(FFFSType.WORKERFS, { files: [file] }, inputDir);
 
+    const inputArgs = this.transcodeOptionsToInputArgs(options);
     const args = this.transcodeOptionsToArgs(options);
 
     const result = await this.ffmpeg.exec(
-      ["-i", `${inputDir}/${file.name}`, ...args, outputFileName],
+      [...inputArgs, "-i", `${inputDir}/${file.name}`, ...args, outputFileName],
       TIMEOUT,
       { signal: abortSignal }
     );
