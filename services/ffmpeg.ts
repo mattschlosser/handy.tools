@@ -326,7 +326,7 @@ export class FFmpegService {
       this.ffmpeg.exec(
         [
           "-ss",
-          "0",
+          options?.trimStart ?? "0",
           "-i",
           `${inputDir}/${file.name}`,
           "-t",
