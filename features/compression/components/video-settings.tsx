@@ -184,6 +184,12 @@ export function VideoSettings({
     }
   }, [trimVideo, videoMetadata]);
 
+  useEffect(() => {
+    if (activeTab !== "super") {
+      setTrimVideo(false);
+    }
+  }, [activeTab]);
+
   const handleQualityChange = (value: number) => {
     onOptionsChange({
       ...cOptions,
