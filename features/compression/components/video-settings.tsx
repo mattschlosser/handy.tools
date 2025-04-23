@@ -75,7 +75,7 @@ const toggleConfig: ConfigOption[] = [
     value: "ultra",
     icon: RocketIcon,
     title: "Strong",
-    description: "String compression with loss in quality",
+    description: "Strong compression with loss in quality",
     options: {
       quality: 50,
       preset: "superfast",
