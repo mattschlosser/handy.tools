@@ -20,7 +20,7 @@ import {
   LucideIcon,
   RocketIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { VideoMetadata } from "../lib/get-video-metadata";
 import { secondsToTimestamp } from "../lib/seconds-to-timestamp";
@@ -218,6 +218,30 @@ export function VideoSettings({
       height: value,
       width: maintainAspectRatio ? Math.round(value * (videoMetadata?.width || 1920) / (videoMetadata?.height || 1080)) : cOptions.width,
     });
+  }
+
+  const trimInputError = useCallback(() => {
+    if (trimVideo && !cOptions.trimStart?.match(/^\d+:[0-5]\d:[0-5]\d$/)) {
+      return "Trim start must be in format hh:mm:ss";
+    } else if (trimVideo && cOptions.trimEnd && !cOptions.trimEnd.match(/^\d+:[0-5]\d:[0-5]\d$/)) {
+      return "Trim end must be in format hh:mm:ss";
+    } else {
+      return "";
+    }
+  }, [trimVideo, cOptions.trimStart, cOptions.trimEnd])
+
+  const handleTrimStartChange = (duration: string) => {
+      onOptionsChange({
+        ...cOptions,
+        trimStart: duration,
+      })
+  }
+
+  const handleTrimEndChange = (duration: string) => {
+    onOptionsChange({
+      ...cOptions,
+      trimEnd: duration,
+    })
   }
 
   const handleRatioChange = (value: boolean) => {
@@ -656,6 +680,7 @@ export function VideoSettings({
                 </label>
               </div>
             {trimVideo && (
+              <>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label className="text-base font-bold" htmlFor="trimStart">
@@ -663,12 +688,8 @@ export function VideoSettings({
                   </Label>
                   <Input
                     disabled={isDisabled}
-                    onChange={(e) =>
-                      onOptionsChange({
-                        ...cOptions,
-                        trimStart: e.target.value,
-                      })
-                    }
+                    onChange={(e) => handleTrimStartChange(e.target.value)}
+                    pattern="^\d+:[0-5]\d:[0-5]\d$"
                     value={cOptions.trimStart}
                     type="string"
                     id="trimStart"
@@ -680,18 +701,21 @@ export function VideoSettings({
                   </Label>
                   <Input
                     disabled={isDisabled}
-                    onChange={(e) =>
-                      onOptionsChange({
-                        ...cOptions,
-                        trimEnd: e.target.value,
-                      })
-                    }
+                    onChange={(e) => handleTrimEndChange(e.target.value)}
+                    pattern="^\d+:[0-5]\d:[0-5]\d$"
                     value={cOptions.trimEnd}
                     type="string"
                     id="trimEnd"
                   />
                 </div>
-              </div>)}
+              </div>
+              {trimInputError() && (
+                <div>
+                  {trimInputError()}
+                </div>
+              )}
+              </>
+            )}
             </div>
             <div className="flex flex-col gap-2">
               <h3 className="text-base font-bold">Audio</h3>
