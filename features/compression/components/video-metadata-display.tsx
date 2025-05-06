@@ -30,6 +30,11 @@ export function VideoMetadataDisplay({
   estimatedSize,
 }: VideoMetadataDisplayProps) {
 
+  /**
+   * Calculates the total duration of the video based on the trim start and end options.
+   *
+   * @param duration The number of seconds
+   */
   const calculateVideoDuration = (duration: number) => {
     if (cOptions.trimStart && cOptions.trimEnd) {
       return secondsToTimestamp(
