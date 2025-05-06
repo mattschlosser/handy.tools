@@ -150,7 +150,7 @@ export const useFfmpeg = () => {
       dispatch({ type: "LOAD_SUCCESS" });
 
       ffmpegService.ffmpeg.on("progress", (progress) => {
-        dispatch({ type: "TRANSCODE_PROGRESS", progress: progress.progress });
+        dispatch({ type: "TRANSCODE_PROGRESS", progress: progress.progress / ffmpegService.getDurationRatio() });
       });
 
       ffmpegService.ffmpeg.on("log", (log) => {
