@@ -101,7 +101,7 @@ export class FFmpegService {
    * 
    * @returns Timestamp of duration if set in options, in format HH:mm:ss
    */
-  calculateDurationFromOptions(options: TranscodeOptions): string | null {
+  calculateDurationFromOptions(options: TranscodeOptions): number | null {
     const { trimStart, trimEnd } = options;
     if (trimEnd) {
       // convert trim end relative to trim start, which is possibly ss, mm:ss, or  HH:mm:ss, if trim start exists
@@ -109,9 +109,9 @@ export class FFmpegService {
         const startSeocnds = timestampToSeconds(trimStart);
         const endSeconds = timestampToSeconds(trimEnd);
         const duration = endSeconds - startSeocnds;
-        return secondsToTimestamp(Math.max(0, duration));
+        return Math.max(0, duration);
       }
-      return trimEnd;
+      return timestampToSeconds(trimEnd);
     }
     return null;
   }
@@ -122,7 +122,7 @@ export class FFmpegService {
    * @returns Array of FFmpeg input arguments
    */
   transcodeOptionsToInputArgs(options: TranscodeOptions) {
-    const { trimStart, trimEnd } = options;
+    const { trimStart } = options;
     const args: string[] = [];
 
     if (trimStart) {
@@ -131,7 +131,7 @@ export class FFmpegService {
 
     const duration = this.calculateDurationFromOptions(options);
     if (duration) {
-      args.push("-t", duration);
+      args.push("-t", duration.toString());
     }
 
     return args;
@@ -318,9 +318,8 @@ export class FFmpegService {
 
     const { duration: totalDuration, sizeMB: originalSizeMB } =
       await getVideoMetadata(file);
-
-    const trimDurationTimestmap = this.calculateDurationFromOptions(options);
-    const trimDuartionSeconds = trimDurationTimestmap ? timestampToSeconds(trimDurationTimestmap) : 0;
+ 
+    const trimDuartionSeconds = this.calculateDurationFromOptions(options);
 
     const sampleDuration = Math.min(
       options.previewDuration || DEFAULT_PREVIEW_DURATION,
@@ -381,8 +380,8 @@ export class FFmpegService {
     const sampleOutputSize = (sampleOutputData as Uint8Array).length;
     const originalOutputSize = (originalOutputData as Uint8Array).length;
 
-    const compressionRatio = sampleOutputSize / originalOutputSize;
-    const durationRatio = trimDurationTimestmap ? trimDuartionSeconds / totalDuration : 1;
+    const durationRatio = trimDuartionSeconds ? trimDuartionSeconds / totalDuration : 1;
+    const compressionRatio = sampleOutputSize / durationRatio / originalOutputSize;
 
     const estimatedSizeMB = originalSizeMB * compressionRatio * durationRatio;
 
