@@ -61,6 +61,7 @@ export default function Compressor() {
     generateVideoPreview,
     progress,
     transcode,
+    abort
   } = useFfmpeg();
 
   const handleTranscode = async () => {
@@ -289,6 +290,14 @@ export default function Compressor() {
                         <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                       )}
                       {isGeneratingPreview ? "Processing" : "Generate Preview"}
+                    </Button>
+                  )}
+                  {isTranscoding && (
+                    <Button
+                      className="flex-0"
+                      onClick={abort}
+                    >
+                      x
                     </Button>
                   )}
                 </div>
