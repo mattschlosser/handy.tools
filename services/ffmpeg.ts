@@ -73,6 +73,7 @@ const sanitizeFileName = (name: string) =>
 export class FFmpegService {
   public ffmpeg: FFmpeg;
   private abortController: AbortController | null = null;
+  private durationRatio: number = 1;
 
   constructor() {
     this.ffmpeg = new FFmpeg();
@@ -116,12 +117,16 @@ export class FFmpegService {
     return null;
   }
 
+  getDurationRatio() {
+    return this.durationRatio;
+  }
+
   /**
    * Converts transcode options into FFmpeg input arguments
    * @param options - Transcoding options including codec, quality, scale, etc.
    * @returns Array of FFmpeg input arguments
    */
-  transcodeOptionsToInputArgs(options: TranscodeOptions) {
+  async transcodeOptionsToInputArgs(file: File, options: TranscodeOptions) {
     const { trimStart } = options;
     const args: string[] = [];
 
@@ -131,7 +136,12 @@ export class FFmpegService {
 
     const duration = this.calculateDurationFromOptions(options);
     if (duration) {
+        // we are trimming the video, we need to set the duration ratio
+      let metadata = await getVideoMetadata(file);
+      this.durationRatio = duration / metadata.duration;
       args.push("-t", duration.toString());
+    } else {
+      this.durationRatio = 1;
     }
 
     return args;
@@ -215,7 +225,7 @@ export class FFmpegService {
 
     await this.ffmpeg.mount(FFFSType.WORKERFS, { files: [file] }, inputDir);
 
-    const inputArgs = this.transcodeOptionsToInputArgs(options);
+    const inputArgs = await this.transcodeOptionsToInputArgs(file, options);
     const args = this.transcodeOptionsToArgs(options);
 
     const result = await this.ffmpeg.exec(
@@ -300,6 +310,7 @@ export class FFmpegService {
       thumbnail: new Blob([data.buffer], { type: "image/webp" }),
     };
   }
+
 
   /**
    * Generates a preview of the video compression by processing a short segment
