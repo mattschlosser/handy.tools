@@ -264,7 +264,6 @@ export const useFfmpeg = () => {
           dispatch({ type: "ABORT" });
           return null;
         }
-        console.log(error);
         dispatch({
           type: "PREVIEW_FAILURE",
           error: (error as Error).message,
